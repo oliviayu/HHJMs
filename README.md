@@ -7,6 +7,17 @@ This package fits shared parameter models for the joint modeling of longitudinal
 
 
 ### Example 
+To use this package, first download the source code 'src' as a folder to your local computer. Then call the R functions using the following R command. 
+
+```r
+# The 'src' folder has been downloaded to my desktop.
+setwd("~/desktop/src")
+file.sources = list.files(pattern="*.r")
+sapply(file.sources, source, .GlobalEnv)
+
+# setwd("~/myworkspace/")    # You may reset the working directory if your data are stored in a different location. 
+```
+
 ```r
    glmeObject1 <- list(
     fm = z ~ 1 + sindoes + does30 + t365 + (1 | patientID),
