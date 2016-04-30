@@ -5,6 +5,26 @@ H-likelihood based Hierarchical Joint Models
 
 This package fits shared parameter models for the joint modeling of longitudinal data and survival data, where the longitudinal responses may be of mixed types, such as binary and continuous, and may be left censored by lower limit of quantification. For statistical inference, we consider a computationally efficient approximate likelihood method based on h-likelihood method [1]. Essentially, the h-likelihood method uses Laplace approximations to the intractable integral in the likelihood. Moreover, it can produce approximate MLEs for the mean parameters and approximate restricted maximum likelihood estimates (REML) for the variance-covariance (dispersion) parameters. 
 
+### Usage
+HHJMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, 
+          iterVal = 0.05, iterMax = 10, nblock = 100, Silent = T )
+
+
+### Arguments
+|argument   | description|
+|-----------|-----------|
+|glmeObject |  ...  | 
+|survObject |  ...  |
+|long.data  | longitudinal data containing the variables named in formulas in glmeObject |
+|surv.data  | survival data containing the variables named in formulas in survObject |
+|idVar      | patient id |
+|iterVal    | ... |
+|iterMax    | The maximum number of iterations. The default value is 10. |
+|nblock     | ... |
+|Silent     | logical: indicating if messages about convergence success or failure should be suppressed|
+
+
+
 
 ### Example 
 To use this package, first download the source code 'src' as a folder to your local computer. Then call the R functions using the following R command. 
