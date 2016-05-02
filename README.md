@@ -75,7 +75,7 @@ sapply(file.sources, source, .GlobalEnv)
 
 # setwd("~/myworkspace/")    # You may reset the working directory if your data are stored in a different location. 
 ```
-In this example, we fit joint models using simulated data. The longitudinal data contain three longitudinal responses, $z$, $y$, and $c$, where $z$ is binary, $y$ is continuous and left-censored due to lower limit of quantification, and $c$ is a censoring indicator of $y$ such that $c=1$ if $y$ is cneosred and $c=0$ otherwise. The survival data contain the observed event time $obs_time$ and the event indicator $event$. Moreover, $sindoes$, $sint0$, $does30$, $t365$, and $t2$ are some time variables used as explanatory variables in the models, and $patientID$ indicates the subject ID in both longitudinal and survival data.
+In this example, we fit joint models using simulated data. The longitudinal data contain three longitudinal responses, $z$, $y$, and $c$, where $z$ is binary, $y$ is continuous and left-censored due to lower limit of quantification, and $c$ is a censoring indicator of $y$ such that $c=1$ if $y$ is cneosred and $c=0$ otherwise. The survival data contain the observed event time $obs_time$ and the event indicator $event$. Moreover, $sindoes$, $does30$, $t365$, and $t2$ are some time variables used as explanatory variables in the models, and $patientID$ indicates the subject ID in both longitudinal and survival data.
 
 ```r
    glmeObject1 <- list(
@@ -89,7 +89,7 @@ In this example, we fit joint models using simulated data. The longitudinal data
   )
   
   CenObject <- list(
-    fm=c ~ 1 +sint0+t365+(1|patientID),
+    fm=c ~ 1 +sindoes+t365+(1|patientID),
     family='binomial',
     par='eta',
     ran.par='a',
@@ -127,7 +127,7 @@ In this example, we fit joint models using simulated data. The longitudinal data
 ＃  library(lme4)
 ＃  fit1 <- glmer(z ~ 1 + sindoes + does30 + t365 + (1 | patientID), data=long.data, family='binomial')
 ＃  fit2 <- lmer(y ~ 1 + sindoes + t365 + t2 + (1 | patientID), data=long.data)
-＃  fit3 <- glmer(c ~ 1 +sint0+t365+(1|patientID), data=long.data, family="binomial")
+＃  fit3 <- glmer(c ~ 1 + sindoes + t365 + (1 | patientID), data=long.data, family="binomial")
 ＃  fitBi <- cbind(ranef(fit1)$patientID, ranef(fit2)$patientID, ranef(fit3)$patientID)
 ＃  nBi <- apply(fitBi, 2, function(x)scale(x, center=F,scale=T))
 ＃  surv.data$nb1 <- nBi[,1]; surv.data$nb2 <- nBi[,2]; surv.data$nb3 <- nBi[,3]
