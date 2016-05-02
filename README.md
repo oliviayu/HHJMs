@@ -21,8 +21,8 @@ where glmeObject and survObject must be in the following format:
 ##### Arguments
 |           |          |
 |-----------|-----------|
-|glmeObject | A list, indicating the GLME models to be fitted. [Details] | 
-|survObject | A list, indicating the Cox model to be fitted.  [Details] |
+|glmeObject | A list, indicating the GLME models to be fitted. [Details](../HHJMs/others.md) | 
+|survObject | A list, indicating the Cox model to be fitted.  [Details](../HHJMs/others.md) |
 |long.data  | longitudinal data containing the variables named in formulas in glmeObject |
 |surv.data  | survival data containing the variables named in formulas in survObject |
 |idVar      | subject id |
