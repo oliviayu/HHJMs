@@ -10,19 +10,26 @@ This package fits shared parameter models for the joint modeling of longitudinal
 HHJMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, 
           itertol = 0.01, iterMax = 10, nblock = 100, Silent = T )
 ```
+<!--
+where glmeObject and survObject must be in the following format:
+```r
+  glmeObject <- list(fm, family, par, ran.par, disp, str_val,  CenObject)
+  CenObject <- list(fm, family='binomial', par, ran.par, str_val, Cvalue, Cregime, truncated)
+```
+-->
 
 ##### Arguments
 |           |          |
 |-----------|-----------|
-|glmeObject | A list, indicating the GLME models to be fitted.  | 
-|survObject | A list, indicating the Cox model to be fitted.   |
+|glmeObject | A list, indicating the GLME models to be fitted. [Details] | 
+|survObject | A list, indicating the Cox model to be fitted.  [Details] |
 |long.data  | longitudinal data containing the variables named in formulas in glmeObject |
 |surv.data  | survival data containing the variables named in formulas in survObject |
 |idVar      | subject id |
 |SIGMA      | A matrix, indicating the inital guess for the covariance matrix of the random effects. It defaults to "NULL", which means SIGMA=*I*.|
 |itertol    | Convergence tolerance on the relative absolute change in log-likelihood function between successive iterations. Convergence is declared when the change is less than itertol. Default is itertol = 0.01. |
 |iterMax    | The maximum number of iterations. The default value is 10. |
-|nblock     | The default value is 100. |
+|nblock     | The number of intervals in the step function which is used to obtain non-parametric estimates of the baseline hazard function. The default value is 100. |
 |Silent     | logical: indicating if messages about convergence success or failure should be suppressed|
 
 ##### Outputs
@@ -44,7 +51,7 @@ HHJMsummary( object, digits)
 -->
 
 ### Example 
-To use this package, first download the source code 'src' as a folder to your local computer. Then call the R functions using the following R command. 
+To use this package, first download the source code in 'src' to your local computer. Then call the R functions using the following R command. 
 
 ```r
 # The 'src' folder has been downloaded to my desktop.
