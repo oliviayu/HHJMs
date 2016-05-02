@@ -46,7 +46,10 @@ where glmeObject and survObject must be in the following format:
 |loglike_value|  value of approximate log likelihood function  |
 |hloglike_value| value of h-likelihood function   |
 
-
+The function below returns a coefficient table for the joint models.
+```r
+HHJMsummary( object, digits )
+```
 
 <!--
 ```r
@@ -117,6 +120,8 @@ In this example, we fit joint models using simulated data. The longitudinal data
                     long.data, surv.data, 
                     idVar="patientID")
                     
+  HHJMsummary(testjm, digits=4) 
+  
                   
 ＃＃ The following models are fitted to generate starting values of the fixed parameters. 
 ＃  library(lme4)
