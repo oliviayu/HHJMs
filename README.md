@@ -42,7 +42,7 @@ where glmeObject and survObject must be in the following format:
 |SIGMA |  estimated covariance matrix of the random effects|
 |sigma |  the square root of the estimated variances of the random errors in LME models|
 |convergence| An integer code indicating type of convergence. 0 indicates successful convergence, 1 indicates that the maximum limit for iterations 'iterMax' has been reached, 2 indicates failure due to error in function evaluation. |
-|loglike_value|  approximated value of log likelihood function  |
+|loglike_value|  value of approximate log likelihood function  |
 |hloglike_value| value of h-likelihood function   |
 
 
