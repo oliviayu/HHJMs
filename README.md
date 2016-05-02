@@ -36,12 +36,13 @@ where glmeObject and survObject must be in the following format:
 |           |          |
 |-----------|-----------|
 |fixedest  |  a named vector of estimated coefficients|
-| fixedsd  | standard errors of estimated coefficients|
-|raneff |  estimated random effects, corresponding to each subject|
+|fixedsd  | standard errors of estimated coefficients|
+|Bi |  estimated random effects, corresponding to each subject|
 |B | estimated random effects, corresponding to each measurement|
-|SIGMA |  estimated covariance matrix of the random effects|
+|corBi|  estimated correlation matrix of the random effects|
+|covBi |  estimated covariance matrix of the random effects|
 |sigma |  the square root of the estimated variances of the random errors in LME models|
-|convergence| An integer code indicating type of convergence. 0 indicates successful convergence, 1 indicates that the maximum limit for iterations 'iterMax' has been reached, 2 indicates failure due to error in function evaluation. |
+|convergence| An integer code indicating type of convergence. 0 indicates successful convergence, 1 indicates that the maximum limit for iterations 'iterMax' has been reached. |
 |loglike_value|  value of approximate log likelihood function  |
 |hloglike_value| value of h-likelihood function   |
 
