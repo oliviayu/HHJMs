@@ -6,25 +6,42 @@ H-likelihood based Hierarchical Joint Models
 This package fits shared parameter models for the joint modeling of longitudinal data and survival data, where the longitudinal responses may be of mixed types, such as binary and continuous, and may be left censored by lower limit of quantification. For statistical inference, we consider a computationally efficient approximate likelihood method based on h-likelihood method [1]. Essentially, the h-likelihood method uses Laplace approximations to the intractable integral in the likelihood. Moreover, it can produce approximate MLEs for the mean parameters and approximate restricted maximum likelihood estimates (REML) for the variance-covariance (dispersion) parameters. 
 
 ### Usage
+```r
 HHJMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, 
-          iterVal = 0.05, iterMax = 10, nblock = 100, Silent = T )
+          itertol = 0.01, iterMax = 10, nblock = 100, Silent = T )
+```
 
-
-### Arguments
-|argument   | description|
+##### Arguments
+|           |          |
 |-----------|-----------|
-|glmeObject |  ...  | 
-|survObject |  ...  |
+|glmeObject | A list, indicating the GLME models to be fitted.  | 
+|survObject | A list, indicating the Cox model to be fitted.   |
 |long.data  | longitudinal data containing the variables named in formulas in glmeObject |
 |surv.data  | survival data containing the variables named in formulas in survObject |
-|idVar      | patient id |
-|iterVal    | ... |
+|idVar      | subject id |
+|SIGMA      | A matrix, indicating the inital guess for the covariance matrix of the random effects. It defaults to "NULL", which means SIGMA=*I*.|
+|itertol    | Convergence tolerance on the relative absolute change in log-likelihood function between successive iterations. Convergence is declared when the change is less than itertol. Default is itertol = 0.01. |
 |iterMax    | The maximum number of iterations. The default value is 10. |
-|nblock     | ... |
+|nblock     | The default value is 100. |
 |Silent     | logical: indicating if messages about convergence success or failure should be suppressed|
 
+##### Outputs
 
 
+
+
+<!--
+```r
+HHJMsummary( object, digits)
+```
+##### Arguments
+|           |          |
+|-----------|-----------|
+| object |  an object for which a summary is desired |
+| digits |  integer indicating  the number of decimal places to be used|
+
+##### Output
+-->
 
 ### Example 
 To use this package, first download the source code 'src' as a folder to your local computer. Then call the R functions using the following R command. 
