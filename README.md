@@ -109,6 +109,8 @@ In this example, we fit joint models using simulated data. The longitudinal data
     str_val=summary(fit4)$coeff[,1]    # see fit4 below
   )
   
+  set.seed(1)
+  
   testjm <- HHJMfit(glmeObject=list(glmeObject1, glmeObject2), 
                     survObject,
                     long.data, surv.data, 
