@@ -69,7 +69,7 @@ To use this package, first download the source code in 'src' to your local compu
 ```r
 # The 'src' folder has been downloaded to my desktop.
 setwd("~/desktop/src")
-file.sources = list.files(pattern="*.r")
+file.sources = list.files(pattern="*.r$")
 sapply(file.sources, source, .GlobalEnv)
 
 # You may reset the working directory if your data are stored in a different location. 
