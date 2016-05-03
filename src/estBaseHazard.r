@@ -12,8 +12,8 @@ estBaseHazard <- function(surv.data, Sllike,
       delta2 <- Twindow[2:nblock]  # upper window
       Harz <- data.frame(delta1, delta2, h0=0, Th0=0)
       linear <- parse(text=Sllike$linear_pred)
-      interval <- (max(Etime)-min(Etime))/(nblock-1)
-        
+      
+      
       for(i in 1:nrow(Harz)){
         
         subdat <- surv.data[Etime<delta2[i] & Etime>=delta1[i], ]
@@ -27,10 +27,7 @@ estBaseHazard <- function(surv.data, Sllike,
               with(subBi0, exp( eval(linear) )  ) ) ))    
         
         Harz$h0[i] <- numer/denom          
-        Harz$Th0[i] <- sum(Harz$h0[1:i])*interval 
-#         i=i+1
-#         print(numer )
-#         print(denom)
+        Harz$Th0[i] <- sum(Harz$h0[1:i])
       }
       
       for(i in 1:nrow(surv.data)){

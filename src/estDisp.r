@@ -137,15 +137,15 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
     while(length(error_mess)!=0 & k<50){
 
       result <- try(lbfgs::lbfgs(call_eval=ff, call_grad=gr,
-                                 vars=str_val0, epsilon=1e-3, 
-                                 delta=1e-4,
-                                 max_iterations=1000,
+                                 vars=str_val0, #epsilon=1e-4, 
+                                 #delta=1e-4,
+                                 max_iterations=1500,
                                  invisible = check), 
                     silent=T)
       
       # result <- BBoptim(str_val0, ff, gr, control=list(checkGrad=T))
 
-      str_val0 <- sapply(str_val0, function(x){x+rnorm(1, 0, max(1, abs(x)))})
+      str_val0 <- sapply(str_val0, function(x){x+rnorm(1, 0, min(1, abs(x)))})
       
       error_mess <- attr(result, "class")
       

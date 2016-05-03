@@ -106,15 +106,16 @@ estFixeff <- function(RespLog=list(Jlik1, Jlik2),
     k <- 0
     
     while(length(error_mess)!=0 & k<50){
-     
+      str_val0 <- sapply(str_val0, function(x)x+rnorm(1,0, min(1, abs(x/5))))
+      
       result <- try(lbfgs::lbfgs(call_eval=ff, call_grad=gr,
-                          vars=str_val0, #epsilon=.005, 
-                          # delta=1e-4,
-                          max_iterations=1000,
+                          vars=str_val0, #epsilon=1e-4, 
+                         # delta=1e-4,
+                          max_iterations=1500,
                           invisible = check), 
                     silent=T)
       
-      str_val0 <- sapply(str_val0, function(x)x+rnorm(1,0,abs(x/5)))
+
 #       result <- try(BBoptim(str_val0, ff, gr, control=list(checkGrad=T)),
 #                     silent=T)
       

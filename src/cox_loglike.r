@@ -4,21 +4,21 @@
 # the mixed effect models.
 
 cox_loglike <- function(survObject, Jllike){
-   model <- survObject$cox.model  
-   status <- survObject$status
+   model <- survObject$fm
+   status <- survObject$event
    resp <- fmReverse(model)$resp  # response variable (event time)
    rvX <- fmReverse(model)$rvX  # baseline covariates
    p <- length(rvX)   # dimension of fixed parameters
    par <- paste(survObject$par, 1:p, sep="")  # name fixed parameters
    
   
-  if(survObject$sharedPar=='random_effect'){  # if random effects are used as predictors in the Cox model 
+#  if(survObject$sharedPar=='random_effect'){  # if random effects are used as predictors in the Cox model 
     raneff <- unlist(Jllike$raneff)  # get random effects from mixed effect models
     q <- length(raneff)  # dimension of random effects
-  } else {  # other cases will be implemented in the future
-    error_message <- 'Error Message: Only shared random effects models are currently available.'
-    return(error_message)
-  } 
+#   } else {  # other cases will be implemented in the future
+#     error_message <- 'Error Message: Only shared random effects models are currently available.'
+#     return(error_message)
+#   } 
    
   Asso <- paste("Asso",1:q, sep="")  # name the coefficients of the random effects
   # linear predictor in Cox model

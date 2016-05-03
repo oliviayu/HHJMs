@@ -18,7 +18,7 @@ HHJMfit <- function(
 
       # arguments by defualt
       SIGMA=NULL,   # starting values
-      iterVal=0.05, 
+      itertol=0.05, 
       iterMax=10, 
       nblock=100, # for estimating baseline hazard
       Silent=T  # check outputs, for debugging
@@ -42,8 +42,8 @@ HHJMfit <- function(
   Spar <- Sllike$par   # fixed parameters in cox model
   Sp <- length(Spar)  # dimension of fixed parameters in Cox model
   SurvParValue <- Sllike$str_val
-  cox.model <- survObject$cox.model
-  status <- survObject$status
+  cox.model <- survObject$fm
+  status <- survObject$event
   
   ########################## settings for the data
   group <- long.data[ , idVar]  # grouping variable, e.g patient ID
@@ -62,7 +62,6 @@ HHJMfit <- function(
   invSIGMA0 <- ginv(SIGMA)
   fixedest0 <- unlist(c(GlmeParValue, SurvParValue))
   sigma0 <- Vassign(Jdisp, rep(0.5, length(Jdisp)))
-  adjSurvpar0 <- fixedest0[- (1:(p+Sp-q))]*sqrt(diag(SIGMA))
   
   new_h <- estBaseHazard(surv.data, Sllike, SurvParValue, Bi0,
                          status, nblock)
@@ -71,12 +70,12 @@ HHJMfit <- function(
   ##########################################
   ########  begining of iteration  #########
   ##########################################
-  Diff=1
+  likDiff=1
   m=1
   convergence=0
   
   
-  while(Diff>iterVal & m<iterMax){
+  while(likDiff>itertol & m<iterMax){
 
     # estimate random effects
     nB <- nBi <- c()      
@@ -121,7 +120,7 @@ HHJMfit <- function(
     dispest <- estDisp(RespLog=list(Jlik1, Jlik2), 
                          Jdisp,      # pars to be estimated    
                          sigma0,   # starting values 
-                         invSIGMA0=solve(cov(Bi)), # starting value
+                         invSIGMA0=invSIGMA0, # starting value
                          Dpars=c(Jraneff,Jfixed,Spar),   # pars taking derivatives to for H matrix
                          long.data, surv.data, # dataset
                          B, Bi,     # random effect values
@@ -132,10 +131,10 @@ HHJMfit <- function(
     new_sigma <- as.list(dispest$sigma)
     new_invSIGMA <- dispest$invSIGMA
     
-    print('cov(Bi)')
-    print(cov(Bi))
-    print('estimated cov(Bi)')
-    print(solve(new_invSIGMA))
+#     print('cov(Bi)')
+#     print(cov(Bi))
+#     print('estimated cov(Bi)')
+#     print(solve(new_invSIGMA))
     
     # estimate baseline hazard function in Cox model
     new_h <- estBaseHazard(surv.data, Sllike, as.list(fixedest), Bi, 
@@ -146,16 +145,6 @@ HHJMfit <- function(
     ####################################################    
     ################## update results ##################
     ####################################################
-    adjSurvpar <- fixedest[-(1:(p+Sp-q))]*sqrt(diag(solve(new_invSIGMA)))
-    
-    Diff <- mean( 
-      c(abs((fixedest-fixedest0)/fixedest0)[1:(p+Sp-q)],
-        abs((adjSurvpar-adjSurvpar0)/adjSurvpar)))
-    
-    Diff0 <- mean(c(abs((fixedest-fixedest0)/fixedest0)[1:(p+Sp-q)]))
-        
-    if(Silent==F) cat("R.Abs.Diff:", Diff, '\n') 
-
     # calculate h-likelihood value
     log_val1 <- sum(with(long.data, with(B, with(as.list(fixedest), with(new_sigma,
                     eval(parse(text=Jlik1)))))))+
@@ -177,11 +166,18 @@ HHJMfit <- function(
     Hval <-  -(nH1+nH2+nH3)
     loglike_value <- hloglike_value -0.5*log(det(Hval)/2/pi)
 
+    if(m==1){
+      likDiff = 1
+    } else{
+      likDiff <- abs(2*(loglike_value-loglike_value0)/(loglike_value+loglike_value0))
+    }
+    
+    Diff <- mean(c(abs((fixedest-fixedest0)/fixedest0)))
 ##############
     cat("############## Iteration:", m, "###############","\n")
     cat("fixed.par:", round(fixedest, 2), "\n")
-    cat("Diff=",Diff,'\n')
-    cat("Diff0=",Diff0,'\n')
+    cat("FixedParDiff=", Diff, '\n')
+    cat("likDiff=", likDiff,'\n')
     cat("sigma:", round(unlist(new_sigma),2), "\n")
     cat("h-like:", hloglike_value, "\n")
     cat("loglike:", loglike_value, "\n")
@@ -190,37 +186,38 @@ HHJMfit <- function(
     fixedest0 <- fixedest
     invSIGMA0 <- new_invSIGMA
     sigma0 <- new_sigma
-    adjSurvpar0 <- adjSurvpar
-
+    loglike_value0 <- loglike_value
+    
     m=m+1  
   }
   
   
-    if(Diff>iterVal & m>=iterMax){
-       warning(paste("Iteration limit reached without covergence. Diff=", Diff))
+    if(likDiff>itertol & m>=iterMax){
+       warning(paste("Iteration limit reached without covergence. Diff=", likDiff))
        convergence=1
      }
 
     # estimate sd's of parameter estimates  
-      finalHmat <- getHmat(RespLog=list(Jlik1, Jlik2), 
-                           pars=c(Jraneff, Jfixed, Spar))
-      mat1 <- evalMat(finalHmat$negH_long, q=p+q+Sp, data = long.data, 
-              par.val =c(sigma0, fixedest0), raneff.val = B) 
-      mat2 <- evalMat(finalHmat$negH_surv, q=p+q+Sp, data = surv.data, 
-                      par.val = c(sigma0, fixedest0), 
-                      raneff.val = Bi)  
-      mat3 <- bdiag(-invSIGMA0*n, diag(0, p+Sp))
-      Hval <-  as.matrix(-(mat1+mat2+mat3))
-      covMat <- ginv(Hval)
-      se2 <- diag(covMat)[-(1:q)]
-      se2[(p+Sp+1):(p+Sp+q)] <- se2[(p+Sp+1):(p+Sp+q)]*diag(solve(invSIGMA0))
+  finalHmat <- getHmat(RespLog=list(Jlik1, Jlik2), 
+                       pars=c(Jraneff, Jfixed, Spar))
+  mat1 <- evalMat(finalHmat$negH_long, q=p+q+Sp, data = long.data, 
+                  par.val =c(sigma0, fixedest0), raneff.val = B) 
+  mat2 <- evalMat(finalHmat$negH_surv, q=p+q+Sp, data = surv.data, 
+                  par.val = c(sigma0, fixedest0), 
+                  raneff.val = Bi)  
+  mat3 <- bdiag(-invSIGMA0*n, diag(0, p+Sp))
+  Hval <-  as.matrix(-(mat1+mat2+mat3))
+  covMat <- ginv(Hval)
+  se2 <- diag(covMat)[-(1:q)]
+  se <- sqrt(se2)
+  
       
         return(list(fixedest=fixedest0, 
-                    varest=se2,
-                    raneff=Bi, 
+                    fixedsd=se,
+                    Bi=Bi, 
                     B=B,
-                    invSIGMA=invSIGMA0, sigma=sigma0,
-                #    surv.data=surv.data,
+                    covBi=solve(invSIGMA0), 
+                    sigma=sigma0,
                     convergence=convergence,
                     loglike_value=loglike_value,
                     hloglike_value=hloglike_value))

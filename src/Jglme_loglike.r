@@ -46,37 +46,37 @@ Jglme_loglike <- function(glmeObject){
       
         # Assume that there is only one regime in the censored data 
         # and the uncensored data follows a normal distribution
-        if(CenObject$Cregime==1 & CenObject$truncated==F){ 
+        # if(CenObject$Cregime==1 & CenObject$truncated==F){ 
             lik[[i]] <- paste( "(", glmmReturn$loglike, 
                               ")*(1-", Cresp, ") +(",
                               Creturn$linear_pred, 
                               ")*",Cresp, "-log(1+exp(", 
                               Creturn$linear_pred, "))")
       
-        } 
+        # } 
         
         # Assume that there is only one regime in the censored data 
         # and the uncensored data follows a truncated normal distribution
-        if(CenObject$Cregime==1 & CenObject$truncated==T){
-            lik[[i]] <- paste("(", glmmReturn$loglike, 
-                              "-log(1-leftint))*(1-", Cresp, ")+(",
-                              Creturn$linear_pred, 
-                              ")*",Cresp,"-log(1+exp(", 
-                              Creturn$linear_pred, "))")
-          } 
+#         if(CenObject$Cregime==1 & CenObject$truncated==T){
+#             lik[[i]] <- paste("(", glmmReturn$loglike, 
+#                               "-log(1-leftint))*(1-", Cresp, ")+(",
+#                               Creturn$linear_pred, 
+#                               ")*",Cresp,"-log(1+exp(", 
+#                               Creturn$linear_pred, "))")
+#           } 
         
         # Assume that there are two regimes in the censored data, one from 
         # normal distribution and one from point mass, and the uncensored 
         # data follows a normal distribution
         
-        if(CenObject$Cregime==2){
-            lik[[i]] <- paste("log(",Cresp, "*leftint+(1-",Cresp,")*exp(",
-                              glmmReturn$loglike,")/(1-leftint)+ exp(", 
-                              Creturn$linear_pred, 
-                              "))-log(1+exp(", 
-                              Creturn$linear_pred, "))")
-        }
-      
+#         if(CenObject$Cregime==2){
+#             lik[[i]] <- paste("log(",Cresp, "*leftint+(1-",Cresp,")*exp(",
+#                               glmmReturn$loglike,")/(1-leftint)+ exp(", 
+#                               Creturn$linear_pred, 
+#                               "))-log(1+exp(", 
+#                               Creturn$linear_pred, "))")
+#         }
+#       
       }
       
   }
