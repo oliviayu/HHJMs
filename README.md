@@ -107,7 +107,7 @@ In this example, we fit joint models using simulated data. The longitudinal data
   )
   
   survObject <- list(
-    fm = obs_time~does30,
+    fm = obs_time ~ age,
     event='event',
     par='lambda',
     str_val=summary(fit4)$coeff[,1]    # see fit4 below
@@ -128,10 +128,10 @@ In this example, we fit joint models using simulated data. The longitudinal data
 ＃  fit1 <- glmer(z ~ 1 + sindoes + does30 + t365 + (1 | patientID), data=long.data, family='binomial')
 ＃  fit2 <- lmer(y ~ 1 + sindoes + t365 + t2 + (1 | patientID), data=long.data)
 ＃  fit3 <- glmer(c ~ 1 + sindoes + t365 + (1 | patientID), data=long.data, family="binomial")
-＃  fitBi <- cbind(ranef(fit1)$patientID, ranef(fit2)$patientID, ranef(fit3)$patientID)
-＃  nBi <- apply(fitBi, 2, function(x)scale(x, center=F,scale=T))
-＃  surv.data$nb1 <- nBi[,1]; surv.data$nb2 <- nBi[,2]; surv.data$nb3 <- nBi[,3]
-＃  fit4 <- coxph(Surv(obs_time, event) ~ does30+ nb1+nb2+nb3, data = surv.data)
+＃  surv.data$nb1 <- ranef(fit1)$patientID
+ #  surv.data$nb2 <- ranef(fit2)$patientID 
+ #  surv.data$nb3 <- ranef(fit3)$patientID
+＃  fit4 <- coxph(Surv(obs_time, event) ~ age + nb1+nb2+nb3, data = surv.data)
   
 ```
 
