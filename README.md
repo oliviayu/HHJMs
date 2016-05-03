@@ -8,7 +8,7 @@ This package fits shared parameter models for the joint modeling of longitudinal
 ### Usage
 ```r
 HHJMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, 
-          itertol = 0.01, iterMax = 10, nblock = 100, Silent = T )
+          itertol = 0.001, iterMax = 10, nblock = 20, Silent = T )
 ```
 <!--
 where glmeObject and survObject must be in the following format:
@@ -26,10 +26,10 @@ where glmeObject and survObject must be in the following format:
 |long.data  | longitudinal data containing the variables named in formulas in glmeObject |
 |surv.data  | survival data containing the variables named in formulas in survObject |
 |idVar      | subject id |
-|SIGMA      | A matrix, indicating the inital guess for the covariance matrix of the random effects. It defaults to "NULL", which means SIGMA=*I*.|
-|itertol    | Convergence tolerance on the relative absolute change in log-likelihood function between successive iterations. Convergence is declared when the change is less than itertol. Default is itertol = 0.01. |
+|SIGMA      | A matrix, indicating the initial guess for the covariance matrix of the random effects. It defaults to "NULL", which means SIGMA=*I*.|
+|itertol    | Convergence tolerance on the relative absolute change in log-likelihood function between successive iterations. Convergence is declared when the change is less than itertol. Default is itertol = 0.001. |
 |iterMax    | The maximum number of iterations. The default value is 10. |
-|nblock     | The number of intervals in the step function which is used to obtain non-parametric estimates of the baseline hazard function. The default value is 100. |
+|nblock     | The number of intervals in the step function which is used to obtain non-parametric estimates of the baseline hazard function. The default value is 20. |
 |Silent     | logical: indicating if messages about convergence success or failure should be suppressed|
 
 ##### Outputs
@@ -39,7 +39,6 @@ where glmeObject and survObject must be in the following format:
 |fixedsd  | standard errors of estimated coefficients|
 |Bi |  estimated random effects, corresponding to each subject|
 |B | estimated random effects, corresponding to each measurement|
-|corBi|  estimated correlation matrix of the random effects|
 |covBi |  estimated covariance matrix of the random effects|
 |sigma |  the square root of the estimated variances of the random errors in LME models|
 |convergence| An integer code indicating type of convergence. 0 indicates successful convergence, 1 indicates that the maximum limit for iterations 'iterMax' has been reached. |
@@ -73,11 +72,14 @@ setwd("~/desktop/src")
 file.sources = list.files(pattern="*.r")
 sapply(file.sources, source, .GlobalEnv)
 
-# setwd("~/myworkspace/")    # You may reset the working directory if your data are stored in a different location. 
+# You may reset the working directory if your data are stored in a different location. 
 ```
 In this example, we fit joint models using simulated data. The longitudinal data contain three longitudinal responses, $z$, $y$, and $c$, where $z$ is binary, $y$ is continuous and left-censored due to lower limit of quantification, and $c$ is a censoring indicator of $y$ such that $c=1$ if $y$ is cneosred and $c=0$ otherwise. The survival data contain the observed event time $obs_time$ and the event indicator $event$. Moreover, $sindoes$, $does30$, $t365$, and $t2$ are some time variables used as explanatory variables in the models, and $patientID$ indicates the subject ID in both longitudinal and survival data.
 
 ```r
+  long.data <- read.csv("LongData.csv", head=T)
+  surv.data <- read.csv("SurvData.csv", head=T)
+
    glmeObject1 <- list(
     fm = z ~ 1 + sindoes + does30 + t365 + (1 | patientID),
     family='binomial',
@@ -113,8 +115,8 @@ In this example, we fit joint models using simulated data. The longitudinal data
     str_val=summary(fit4)$coeff[,1]    # see fit4 below
   )
   
-  set.seed(1)
-  
+  set.seed(10) 
+
   testjm <- HHJMfit(glmeObject=list(glmeObject1, glmeObject2), 
                     survObject,
                     long.data, surv.data, 
@@ -128,12 +130,57 @@ In this example, we fit joint models using simulated data. The longitudinal data
 ＃  fit1 <- glmer(z ~ 1 + sindoes + does30 + t365 + (1 | patientID), data=long.data, family='binomial')
 ＃  fit2 <- lmer(y ~ 1 + sindoes + t365 + t2 + (1 | patientID), data=long.data)
 ＃  fit3 <- glmer(c ~ 1 + sindoes + t365 + (1 | patientID), data=long.data, family="binomial")
-＃  surv.data$nb1 <- ranef(fit1)$patientID
- #  surv.data$nb2 <- ranef(fit2)$patientID 
- #  surv.data$nb3 <- ranef(fit3)$patientID
-＃  fit4 <- coxph(Surv(obs_time, event) ~ age + nb1+nb2+nb3, data = surv.data)
+#  surv.data$nb1 <- ranef(fit1)$patientID
+#  surv.data$nb2 <- ranef(fit2)$patientID 
+#  surv.data$nb3 <- ranef(fit3)$patientID
+#  fit4 <- coxph(Surv(obs_time, event) ~ age + nb1 + nb2 + nb3, data = surv.data)
   
 ```
+
+The fitting results based on separate analyses and HHJMs are summarized below respectively.
+
+```r
+### fitting results based on separate analyses
+
+        Estimate  Std. Error  z value    Pvalue
+alpha0   -1.778      0.069   -25.832     0
+alpha1    2.017      0.084    24.009     0
+alpha2    -0.228     0.016   -13.987     0
+alpha3    1.367      0.031    43.710     0
+beta0     1.072      0.039    27.323     0
+beta1     1.637      0.029    56.262     0
+beta2     1.885      0.030    62.964     0
+beta3    -0.446      0.012   -36.429     0
+eta0      0.585      0.068     8.588     0
+eta1     -0.555      0.085    -6.550     0
+eta2     -2.018      0.045   -44.710     0
+lambda1   0.247      0.027     9.162     0
+Asso1    -2.249      0.299    -7.528     0
+Asso2    -2.154      0.391    -5.516     0
+Asso3    -3.757      0.459    -8.190     0
+
+### fitting results based on HHJMs
+
+        Estimate  Std.Error z.value Pvalue
+alpha0    -1.754     0.064 -27.263      0
+alpha1     1.985     0.083  23.985      0
+alpha2    -0.224     0.016 -13.902      0
+alpha3     1.341     0.030  45.052      0
+beta0      1.001     0.052  19.265      0
+beta1      2.496     0.024 106.203      0
+beta2      1.870     0.022  83.917      0
+beta3     -0.514     0.009 -60.421      0
+eta0       0.558     0.062   8.938      0
+eta1      -0.548     0.084  -6.537      0
+eta2      -1.988     0.043 -46.194      0
+lambda1    0.232     0.007  31.124      0
+Asso1     -2.706     0.231 -11.687      0
+Asso2     -2.272     0.259  -8.762      0
+Asso3     -4.402     0.361 -12.195      0
+
+```
+
+
 
 
 ### References

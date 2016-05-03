@@ -109,8 +109,8 @@ estFixeff <- function(RespLog=list(Jlik1, Jlik2),
       str_val0 <- sapply(str_val0, function(x)x+rnorm(1,0, min(1, abs(x/5))))
       
       result <- try(lbfgs::lbfgs(call_eval=ff, call_grad=gr,
-                          vars=str_val0, #epsilon=1e-4, 
-                         # delta=1e-4,
+                          vars=str_val0, epsilon=1e-4, 
+                          delta=1e-4,
                           max_iterations=1500,
                           invisible = check), 
                     silent=T)

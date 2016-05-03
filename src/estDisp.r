@@ -137,8 +137,8 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
     while(length(error_mess)!=0 & k<50){
 
       result <- try(lbfgs::lbfgs(call_eval=ff, call_grad=gr,
-                                 vars=str_val0, #epsilon=1e-4, 
-                                 #delta=1e-4,
+                                 vars=str_val0, epsilon=1e-4, 
+                                 delta=1e-4,
                                  max_iterations=1500,
                                  invisible = check), 
                     silent=T)
