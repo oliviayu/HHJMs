@@ -3,7 +3,7 @@ H-likelihood based Hierarchical Joint Models
 
 ### Description
 
-This package fits shared parameter models for the joint modeling of longitudinal data and survival data, where the longitudinal responses may be of mixed types, such as binary and continuous, and may be left censored by lower limit of quantification. For statistical inference, we consider a computationally efficient approximate likelihood method based on h-likelihood method [1]. Essentially, the h-likelihood method uses Laplace approximations to the intractable integral in the likelihood. Moreover, it can produce approximate MLEs for the mean parameters and approximate restricted maximum likelihood estimates (REML) for the variance-covariance (dispersion) parameters. 
+This package fits shared parameter models for the joint modeling of longitudinal data and survival data, where the longitudinal responses may be of mixed types, such as binary and continuous, and may be left censored by lower limit of quantification. For statistical inference, we consider a computationally efficient approximate likelihood method based on h-likelihood method [3]. There is an extensive literature on h-likelihood method (e.g. [1]-[5]). Essentially, the h-likelihood method uses Laplace approximations to the intractable integral in the likelihood. Moreover, it can produce approximate MLEs for the mean parameters and approximate restricted maximum likelihood estimates (REML) for the variance-covariance (dispersion) parameters. 
 
 ### Usage
 ```r
@@ -130,10 +130,10 @@ In this example, we fit joint models using simulated data. The longitudinal data
 ＃  fit1 <- glmer(z ~ 1 + sindoes + does30 + t365 + (1 | patientID), data=long.data, family='binomial')
 ＃  fit2 <- lmer(y ~ 1 + sindoes + t365 + t2 + (1 | patientID), data=long.data)
 ＃  fit3 <- glmer(c ~ 1 + sindoes + t365 + (1 | patientID), data=long.data, family="binomial")
-#  surv.data$nb1 <- ranef(fit1)$patientID
-#  surv.data$nb2 <- ranef(fit2)$patientID 
-#  surv.data$nb3 <- ranef(fit3)$patientID
-#  fit4 <- coxph(Surv(obs_time, event) ~ age + nb1 + nb2 + nb3, data = surv.data)
+＃ surv.data$nb1 <- ranef(fit1)$patientID
+＃ surv.data$nb2 <- ranef(fit2)$patientID 
+＃ surv.data$nb3 <- ranef(fit3)$patientID
+＃ fit4 <- coxph(Surv(obs_time, event) ~ age + nb1 + nb2 + nb3, data = surv.data)
   
 ```
 
@@ -184,4 +184,14 @@ Asso3     -4.402     0.361 -12.195      0
 
 
 ### References
-[1] Lee, Y., & Nelder, J. A. (1996). Hierarchical generalized linear models. Journal of the Royal Statistical Society. Series B (Methodological), 619-678.
+[1] Do Ha, I., Lee, Y., & Song, J. K. (2002). Hierarchical-likelihood approach for mixed linear models with censored data. Lifetime data analysis, 8(2), 163-176.
+
+[2] Ha, I. D., Park, T., & Lee, Y. (2003). Joint modelling of repeated measures and survival time data. Biometrical journal, 45(6), 647-658.
+
+[3] Lee, Y., Nelder, J. A., & Noh, M. (2007). H-likelihood: problems and solutions. Statistics and Computing, 17(1), 49-55.
+
+[4] Lee, Y., & Nelder, J. A. (1996). Hierarchical generalized linear models. Journal of the Royal Statistical Society. Series B (Methodological), 619-678.
+
+[5] Noh, M., & Lee, Y. (2007). REML estimation for binary data in GLMMs. Journal of Multivariate Analysis, 98(5), 896-915.
+
+

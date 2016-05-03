@@ -1,5 +1,7 @@
 
-Note that *glmeObject( )* and *survObject( )* must be in the following format:
+### More details on the arguments.
+
+The *glmeObject( )* and *survObject( )* must be in the following format:
 ```r
   glmeObject <- list(fm, family, par, ran.par, sigma, str_val,  CenObject)
   survObject <- list(fm, event,  par, str_val)
@@ -9,7 +11,7 @@ Note that *glmeObject( )* and *survObject( )* must be in the following format:
 #### Arguments
 |       |        |
 |-------|--------| 
-|fm     | A two-sided linear formula object with the response on the left of a ~ operator and the terms, separated by + operators, on the right. For GLME models, random-effects terms are distinguished by vertical bars ("|") separating expressions for design matrices from grouping factors. |
+|fm     | A two-sided linear formula object with the response on the left of a ~ operator and the terms, separated by + operators, on the right. For GLME models, random-effects terms are distinguished by vertical bars ("|") separating expressions for design matrices from grouping factors. For Cox model, the random effects in GLME models will be automatically incorporated as explanatory variables. So there is no need to include random effects on the right side of the formula.|
 |family | A GLM family.  |
 | event |  event indicator  |
 | par | A character string, naming the fixed parameters. Such as, "alpha", "beta", ...  |
@@ -17,6 +19,8 @@ Note that *glmeObject( )* and *survObject( )* must be in the following format:
 | sigma  |  A character string, naming the standard deviation for normal distribution. Such as, "sigma". |
 | str_val |  A numeric vector of starting values for the fixed parameters in the model. |
 | CenObject | A list, indicating the logistic GLME model used to model the censoring mechanism. CenObject=NULL means that the response variable is not censored.| 
+
+See the example in README.md for details.
 
 <!-- 
 |Cvalue | value of the lower limit of quantification|
