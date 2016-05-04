@@ -27,7 +27,7 @@ where glmeObject and survObject must be in the following format:
 |surv.data  | survival data containing the variables named in formulas in survObject |
 |idVar      | subject id |
 |SIGMA      | A matrix, indicating the initial guess for the covariance matrix of the random effects. It defaults to "NULL", which means SIGMA=*I*.|
-|itertol    | Convergence tolerance on the relative absolute change in log-likelihood function between successive iterations. Convergence is declared when the change is less than itertol. Default is itertol = 0.001. |
+|itertol    | Convergence tolerance on the relative absolute change in log-likelihood function between successive iterations. Convergence is declared when the change is less than itertol. Default is itertol = 0.01. |
 |iterMax    | The maximum number of iterations. The default value is 10. |
 |nblock     | The number of intervals in the step function which is used to obtain non-parametric estimates of the baseline hazard function. The default value is 20. |
 |Silent     | logical: indicating if messages about convergence success or failure should be suppressed|
@@ -120,7 +120,8 @@ In this example, we fit joint models using simulated data. The longitudinal data
   testjm <- HHJMfit(glmeObject=list(glmeObject1, glmeObject2), 
                     survObject,
                     long.data, surv.data, 
-                    idVar="patientID")
+                    idVar="patientID",
+                    itertol=0.001)
                     
   HHJMsummary(testjm, digits=4) 
   

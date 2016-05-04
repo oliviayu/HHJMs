@@ -18,9 +18,9 @@ HHJMfit <- function(
 
       # arguments by defualt
       SIGMA=NULL,   # starting values
-      itertol=0.05, 
+      itertol=0.01, 
       iterMax=10, 
-      nblock=100, # for estimating baseline hazard
+      nblock=20, # for estimating baseline hazard
       Silent=T  # check outputs, for debugging
       ){
   
