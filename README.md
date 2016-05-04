@@ -8,7 +8,7 @@ This package fits shared parameter models for the joint modeling of longitudinal
 ### Usage
 ```r
 HHJMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, 
-          itertol = 0.001, iterMax = 10, nblock = 20, Silent = T )
+          itertol = 0.01, iterMax = 10, nblock = 20, Silent = T )
 ```
 <!--
 where glmeObject and survObject must be in the following format:
