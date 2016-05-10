@@ -114,7 +114,7 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
   }
   
   # initial values 
-  L <- chol(invSIGMA0)
+  L <- t(chol(invSIGMA0))
   str_val <- unlist(c(sigma0, L[lower.tri(L,diag=T)]))
   
   message <- -1
@@ -128,14 +128,15 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
     error_mess="try-error"
     k <- 0
     
-    if(M<10){ str_val0 <- str_val  
+    if(M<20){ str_val0 <- str_val  
     }else{ 
       L0 <- diag(1, q2, q2)
       str_val0 <- c(rep(1, q1), L0[lower.tri(L0,diag=T)])}
     
 
     while(length(error_mess)!=0 & k<50){
-
+      str_val0 <- sapply(str_val0, function(x){x+rnorm(1, 0, min(1, abs(x)))})
+      
       result <- try(lbfgs::lbfgs(call_eval=ff, call_grad=gr,
                                  vars=str_val0, epsilon=1e-4, 
                                  delta=1e-4,
@@ -145,7 +146,7 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
       
       # result <- BBoptim(str_val0, ff, gr, control=list(checkGrad=T))
 
-      str_val0 <- sapply(str_val0, function(x){x+rnorm(1, 0, min(1, abs(x)))})
+
       
       error_mess <- attr(result, "class")
       
@@ -162,7 +163,7 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
     }
   
     message <- result$convergence
-    str_val0 <- result$par
+    # str_val0 <- result$par
       
     if(Silent==F) print(message); print(M); print(result)
 
