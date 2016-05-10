@@ -73,9 +73,9 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
     H <-  as.matrix(-(nD1+nD2+nD3))
     invH <- ginv(H)
     
-
+    
     ## part1: dispersion pars in mixed-effect models
-    # evaluate d(H)/d(sigma), where sigma are dispersion parameters to be estimated
+    # evaluate d(H)/d(xi), sigma=xi^2, where sigma are dispersion parameters to be estimated
     for(i in 1:q1){
       dH  <- rep(NA, q^2) 
       
@@ -85,15 +85,15 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
       }
       
       dH_val1 <- evalMat(dH, q, long.data, par.val, raneff.val=B)
-      dH_val <- -(dH_val1)  
-      
-      ## dh /d sigma, where sigma is from LME models and 
+      dH_val <- -(dH_val1)*2*xx[i]  
+
+      ## dh /d xi, with sigma=xi^2 and sigma is from LME models and 
       ## h is log h-likelihood function
       df1 <- Vderiv(RespLog[[1]], Jdisp[i])
       df1_val <- with(long.data, with(par.val, with(B, eval(parse(text=df1)))))
    
-      fy0 <- sum(df1_val)-0.5*matrix.trace(as.matrix(invH%*%dH_val))
-      fy[i] <- fy0*2*xx[i]
+      fy[i] <- sum(df1_val)*2*xx[i]-0.5*matrix.trace(as.matrix(invH%*%dH_val))
+      
     }
     
     ## part2: dispersion pars of random effects
@@ -114,72 +114,55 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
   }
   
   # initial values 
-  L <- t(chol(invSIGMA0))
-  str_val <- unlist(c(sigma0, L[lower.tri(L,diag=T)]))
-  
-  message <- -1
+  L <- t(chol(solve(cov(Bi))))
+  str_val0 <- unlist(c(sqrt(sigma0), L[lower.tri(L,diag=T)]))
+  message <- (-1)
   M <- 1
-  
   
   if(Silent==F) check=0  else check=1
   
   # start iteration
-  while(message < 0 & M<50){
-    error_mess="try-error"
-    k <- 0
-    
-    if(M<20){ str_val0 <- str_val  
-    }else{ 
-      L0 <- diag(1, q2, q2)
-      str_val0 <- c(rep(1, q1), L0[lower.tri(L0,diag=T)])}
-    
-
-    while(length(error_mess)!=0 & k<50){
-      str_val0 <- sapply(str_val0, function(x){x+rnorm(1, 0, min(1, abs(x)))})
-      
-      result <- try(lbfgs::lbfgs(call_eval=ff, call_grad=gr,
-                                 vars=str_val0, epsilon=1e-4, 
-                                 delta=1e-4,
-                                 max_iterations=1500,
-                                 invisible = check), 
+  while(message < 0 & M<20){
+  
+    if(M<10){
+        result <- try(lbfgs::lbfgs(call_eval=ff, call_grad=gr,
+                                   vars=str_val0, epsilon=1e-4, 
+                                   delta=1e-4,
+                                   max_iterations=1500,
+                                   invisible = check), 
+                      silent=T)
+    } else {
+      result <- try(BB::BBoptim(str_val0, fn=ff, gr=NULL, 
+                                control=list(checkGrad=F,
+                                             ftol=1e-10,
+                                             gtol=1e-2,
+                                             trace=T)),
                     silent=T)
-      
-      # result <- BBoptim(str_val0, ff, gr, control=list(checkGrad=T))
-
-
-      
-      error_mess <- attr(result, "class")
-      
-      k <- k+1
-      if(Silent==F){
-        cat('k=',k , error_mess, '\n')
-        # print(result)
-      } 
+    }
         
+    error_mess <- attr(result, "class")
+        
+    if(length(error_mess)!=0 ){ 
+      message = -1
+    } else {
+      if(M<10) message <- result$convergence 
+      if(M>=10) message <- -abs(result$convergence)
+      str_val0 <- result$par
     }
-    
-    if(k>=50){ 
-      stop('Error occurs when estimating dispersion parameters.')
-    }
-  
-    message <- result$convergence
-    # str_val0 <- result$par
-      
-    if(Silent==F) print(message); print(M); print(result)
-
-    M <- M+1
+     
+    str_val0 <- sapply(str_val0, function(x)x+rnorm(1,0, min(1, abs(x/5))))
+    if(Silent==F) print(message); print(M); print(result)   
+    M <- M +1
   }
-  
+
     
-  if(M<50){
+  if(message==0){
     output <- (result$par[1:q1])^2
     names(output) <- Jdisp
-      
     Lval <- Vassign(L2$Mpar, result$par[-(1:q1)])
     mat <- evalMat(as.list(L2$M), q2, par.val=Lval)
   } else {
-    message("Iteration limit reached without convergence -- for dispersion parameters.")  
-    stop()
+    stop("Iteration limit reached without convergence -- for dispersion parameters.")  
   }
   
   return(list(sigma=output, invSIGMA=mat, Lval=Lval))

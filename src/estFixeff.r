@@ -99,48 +99,50 @@ estFixeff <- function(RespLog=list(Jlik1, Jlik2),
   str_val0 <- str_val
   message <- -1
   M <- 1
+
   if(Silent==F) check=0  else check=1
   
-  while(message < 0 & M<50){
-    error_mess="try-error"
-    k <- 0
+  # start iteration
+  while(message < 0 & M<20){
     
-    while(length(error_mess)!=0 & k<50){
-      str_val0 <- sapply(str_val0, function(x)x+rnorm(1,0, min(1, abs(x/5))))
-      
+    if(M<10){
       result <- try(lbfgs::lbfgs(call_eval=ff, call_grad=gr,
-                          vars=str_val0, epsilon=1e-4, 
-                          delta=1e-4,
-                          max_iterations=1500,
-                          invisible = check), 
+                                 vars=str_val0, epsilon=1e-4, 
+                                 delta=1e-4,
+                                 max_iterations=1500,
+                                 invisible = check), 
                     silent=T)
-      
-
-#       result <- try(BBoptim(str_val0, ff, gr, control=list(checkGrad=T)),
-#                     silent=T)
-      
-      error_mess <- attr(result, "class")
-      
-      k <- k+1
+    } else {
+      result <- try(BB::BBoptim(str_val0, fn=ff, gr=NULL, 
+                                control=list(checkGrad=F,
+                                             ftol=1e-10,
+                                             gtol=1e-2,
+                                             trace=T)),
+                    silent=T)
     }
     
-    if(k>=50){ 
-      stop('Error occurs when estimating fixed parameters.')
+    error_mess <- attr(result, "class")
+    
+    if(length(error_mess)!=0 ){ 
+      message = -1
+    } else {
+      if(M<10) message <- result$convergence 
+      if(M>=10) message <- -abs(result$convergence)
+      str_val0 <- result$par
     }
     
-    message <- result$convergence
-    str_val0 <- result$par
-    if(Silent==F) print(message); print(M); print(result)
-    M <- M+1
+    str_val0 <- sapply(str_val0, function(x)x+rnorm(1,0, min(1, abs(x/5))))
+    if(Silent==F) print(message); print(M); print(result)   
+    M <- M +1
   }
   
-  if(M<50){
+  
+  if(message==0){
     gamma <- result$par
     names(gamma) <- names(str_val)
     fval <- result$value
   } else {
-    message("Iteration limit reached without convergence -- for fixed parameters.")  
-    stop()
+    stop("Iteration limit reached without convergence -- for fixed parameters.")  
   }
   
   return(list(gamma=gamma, fval=fval))
