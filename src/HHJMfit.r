@@ -8,6 +8,7 @@
 library(Deriv)
 library(matrixcalc)
 library(lbfgs)
+library(BB)
 
 HHJMfit <- function(
       #### arguments must be specified by users  ####
@@ -17,11 +18,13 @@ HHJMfit <- function(
       idVar, 
 
       # arguments by defualt
-      SIGMA=NULL,   # starting values
-      itertol=0.01, 
+      SIGMA=NULL, sigma=NULL,   # starting values
+      REML=T,
+      itertol=0.01, Ptol=0.01, adjPtol=0.01, 
       iterMax=10, 
-      nblock=20, # for estimating baseline hazard
-      Silent=T  # check outputs, for debugging
+      nblock=50, # for estimating baseline hazard
+      Silent=T,  # check outputs, for debugging
+      sclRaneff=F
       ){
   
   ########################## settings for Longitudinal modeles
@@ -61,7 +64,15 @@ HHJMfit <- function(
   if(is.null(SIGMA)) SIGMA <- diag(1,q,q)
   invSIGMA0 <- ginv(SIGMA)
   fixedest0 <- unlist(c(GlmeParValue, SurvParValue))
-  sigma0 <- Vassign(Jdisp, rep(0.5, length(Jdisp)))
+  testMat <- invSIGMA0
+    
+  adjSurv0 <- fixedest0[(p+Sp-q+1):(p+Sp)]*sqrt(diag(SIGMA))
+  adjfixed0 <- c(fixedest0[1:(p+Sp-q)], adjSurv0)
+  
+  if(is.null(sigma)){
+    sigma0 <- Vassign(Jdisp, rep(0.5, length(Jdisp)))
+  } else {sigma0 <- Vassign(Jdisp, sigma)}
+
   
   new_h <- estBaseHazard(surv.data, Sllike, SurvParValue, Bi0,
                          status, nblock)
@@ -70,13 +81,12 @@ HHJMfit <- function(
   ##########################################
   ########  begining of iteration  #########
   ##########################################
-  likDiff=1
+  likDiff=Diff=Diff1=1;
   m=1
-  convergence=0
   
-  
-  while(likDiff>itertol & m<iterMax){
+  while(likDiff > itertol & Diff>Ptol & Diff1>adjPtol & m<iterMax){
 
+    
     # estimate random effects
     nB <- nBi <- c()      
     
@@ -87,7 +97,7 @@ HHJMfit <- function(
       bi <- estRaneff(RespLog=list(Jlik1, Jlik2), 
                     raneff=Jraneff, 
                     long.data=subdat, surv.dat=subsurv.dat, 
-                    invSIGMA=invSIGMA0, sigma=sigma0, 
+                    invSIGMA=testMat, sigma=sigma0, 
                     ParVal=fixedest0,
                     Silent=Silent)    
       nBi <- rbind(nBi, bi)
@@ -100,6 +110,15 @@ HHJMfit <- function(
     row.names(Bi)=row.names(B)=c()
     names(B) <- names(Bi) <- Jraneff
     
+    print(apply(Bi, 2, mean))
+
+    if(sclRaneff==T){
+      cenBi <- apply(Bi, 2, mean)
+      Bi <- Bi - matrix(rep(1, n),ncol=1)%*%matrix(cenBi, nrow=1)
+      B <- B- matrix(rep(1, N),ncol=1)%*%matrix(cenBi, nrow=1)
+    }
+    print(apply(Bi,2,mean))
+    print("estimate random effects --- done.")
     
     # estimate fixed parameters in longitudinal and survival model
     estResult <-  estFixeff(RespLog=list(Jlik1, Jlik2), 
@@ -114,31 +133,45 @@ HHJMfit <- function(
     
     fixedest <- estResult$gamma
     if(Silent==F) cat("fixed est=", round(fixedest, 2), '\n')
+    print("estimate fixed parameters --- done.")
     
-
     # estimate dispersion parameters
-    dispest <- estDisp(RespLog=list(Jlik1, Jlik2), 
+    if(REML==T){
+      dispest <- estDisp(RespLog=list(Jlik1, Jlik2), 
                          Jdisp,      # pars to be estimated    
                          sigma0,   # starting values 
-                         invSIGMA0=invSIGMA0, # starting value
+                         invSIGMA0, # starting value
                          Dpars=c(Jraneff,Jfixed,Spar),   # pars taking derivatives to for H matrix
                          long.data, surv.data, # dataset
                          B, Bi,     # random effect values
                          ParVal=fixedest, # other par values, fixed
                          Silent)
-    
+    } else {
+      dispest <- estDisp(RespLog=list(Jlik1, Jlik2), 
+                         Jdisp,      # pars to be estimated    
+                         sigma0,   # starting values 
+                         invSIGMA0, # starting value
+                         Dpars=Jraneff,   # pars taking derivatives to for H matrix
+                         long.data, surv.data, # dataset
+                         B, Bi,     # random effect values
+                         ParVal=fixedest, # other par values, fixed
+                         Silent)
+    }
     
     new_sigma <- as.list(dispest$sigma)
     new_invSIGMA <- dispest$invSIGMA
-    
-#     print('cov(Bi)')
-#     print(cov(Bi))
-#     print('estimated cov(Bi)')
-#     print(solve(new_invSIGMA))
+    print("estimate dispersion parameters --- done.")
+
+    print('cor(Bi)')
+    print(cor(Bi))
+    print('cov(Bi)')
+    print(cov(Bi))
+    print('estimated cov(Bi)')
+    print(ginv(new_invSIGMA))
     
     # estimate baseline hazard function in Cox model
     new_h <- estBaseHazard(surv.data, Sllike, as.list(fixedest), Bi, 
-                           status,nblock)
+                           status, nblock)
     surv.data <- new_h$ndat
     
     
@@ -164,19 +197,26 @@ HHJMfit <- function(
                    par.val=c(fixedest, new_sigma), raneff.val=Bi)  # survival part
     nH3 <- -new_invSIGMA*n
     Hval <-  -(nH1+nH2+nH3)
-    loglike_value <- hloglike_value -0.5*log(det(Hval)/2/pi)
+    loglike_value <- hloglike_value -0.5*log(det(Hval/2/pi))
 
     if(m==1){
       likDiff = 1
     } else{
-      likDiff <- abs(2*(loglike_value-loglike_value0)/(loglike_value+loglike_value0))
+      #likDiff <- abs(2*(loglike_value-loglike_value0)/(loglike_value+loglike_value0))
+      likDiff <- abs((loglike_value-loglike_value0)/(loglike_value0))
     }
-    
+
+        
     Diff <- mean(c(abs((fixedest-fixedest0)/fixedest0)))
-##############
+    adjSurv <- fixedest[(p+Sp-q+1):(p+Sp)]*sqrt(diag(cov(Bi)))
+    adjfixed <- c(fixedest[1:(p+Sp-q)], adjSurv)
+    Diff1 <- mean(c(abs((adjfixed-adjfixed0)/adjfixed0)))
+
+    ##############
     cat("############## Iteration:", m, "###############","\n")
     cat("fixed.par:", round(fixedest, 2), "\n")
     cat("FixedParDiff=", Diff, '\n')
+    cat("adjFixedParDiff=", Diff1, '\n')
     cat("likDiff=", likDiff,'\n')
     cat("sigma:", round(unlist(new_sigma),2), "\n")
     cat("h-like:", hloglike_value, "\n")
@@ -184,31 +224,49 @@ HHJMfit <- function(
     cat("###################################","\n")
 
     fixedest0 <- fixedest
+    adjfixed0 <- adjfixed
     invSIGMA0 <- new_invSIGMA
-    sigma0 <- new_sigma
+    sigma0 <- unlist(new_sigma)
     loglike_value0 <- loglike_value
-    
+    testMat <- solve(cor(Bi))
     m=m+1  
   }
   
   
-    if(likDiff>itertol & m>=iterMax){
-       warning(paste("Iteration limit reached without covergence. Diff=", likDiff))
+  ## messages about convergence success or failure
+   if(likDiff > itertol & Diff>Ptol & Diff1>adjPtol & m>=iterMax){
+       warning("Iteration limit reached without covergence.")
        convergence=1
-     }
+    }
+  
+   if(likDiff <= itertol){
+     message("Successful convergence. Iteration stops because likDiff <= itertol.")
+     convergence=0
+   }
+  
+  if(Diff<=Ptol){
+    message("Successful convergence. Iteration stops because FixedParDiff <= Ptol.")
+    convergence=0
+  }
 
-    # estimate sd's of parameter estimates  
+  if(Diff1<=adjPtol){
+    message("Successful convergence. Iteration stops because adjFixedParDiff <= Ptol. ")
+    convergence=0
+  }
+  
+  
+  # estimate sd's of parameter estimates  
   finalHmat <- getHmat(RespLog=list(Jlik1, Jlik2), 
-                       pars=c(Jraneff, Jfixed, Spar))
+                       pars=c( Jfixed, Spar, Jraneff))
   mat1 <- evalMat(finalHmat$negH_long, q=p+q+Sp, data = long.data, 
                   par.val =c(sigma0, fixedest0), raneff.val = B) 
   mat2 <- evalMat(finalHmat$negH_surv, q=p+q+Sp, data = surv.data, 
                   par.val = c(sigma0, fixedest0), 
                   raneff.val = Bi)  
-  mat3 <- bdiag(-invSIGMA0*n, diag(0, p+Sp))
+  mat3 <- bdiag( diag(0, p+Sp),-invSIGMA0*n)
   Hval <-  as.matrix(-(mat1+mat2+mat3))
   covMat <- ginv(Hval)
-  se2 <- diag(covMat)[-(1:q)]
+  se2 <- diag(covMat)[1:(p+Sp)]
   se <- sqrt(se2)
   
       
@@ -216,7 +274,7 @@ HHJMfit <- function(
                     fixedsd=se,
                     Bi=Bi, 
                     B=B,
-                    covBi=solve(invSIGMA0), 
+                    covBi=ginv(invSIGMA0), 
                     sigma=sigma0,
                     convergence=convergence,
                     loglike_value=loglike_value,
