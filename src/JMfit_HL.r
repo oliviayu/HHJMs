@@ -32,6 +32,7 @@ JMfit_HL <- function(
   
   ########################## settings for Survival model
   if(class(survFit)=="coxph"){
+    Sllike <-  cox_loglike(survObject) 
     nblock=max(surv.data[, Sllike$resp])
     Haz = basehaz(survFit)
     names(Haz) <- c("Th0", eventTime)
@@ -39,13 +40,13 @@ JMfit_HL <- function(
     Nsurv <- merge(surv.data, Haz, by.all=eventTime)
     Nsurv <- Nsurv[order(Nsurv[,idVar]) ,]
     surv.data=Nsurv
-    weibPar = NULL
+
   } else if(class(survFit)=="survreg" & survFit$dist=="weibull"){
     weibPar = c( -summary(survFit)$coeff[1]/summary(survFit)$scale,
                  1/summary(survFit)$scale)
+    Sllike <-  cox_loglike(survObject, weibPar) 
   } 
   
-  Sllike <-  cox_loglike(survObject, weibPar) 
   Jlik2 <- Sllike$loglike  # log-likelihood function
   Spar <- Sllike$par   # fixed parameters in survival model
   Sp <- length(Spar)  # dimension of fixed parameters in survival model

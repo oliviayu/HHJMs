@@ -95,20 +95,10 @@ estRaneff <- function(RespLog,
                              method="L-BFGS-B",
                             control = list(maxit = 2000,
                                            trace=0)), silent=T)
-#           result <- try(BB::BBoptim(bval, fn=ff, gr=gr, 
-#                                     control=list(checkGrad=T,
-#                                    trace=T)),
-#                             silent=F)
-#         
         error_mess <- attr(result, "class")
 
           
         M <- M+1
-#         bval <- rnorm(length(raneff),0,1)
-#         ff(bval)
-#         gr(bval)
-#         bval
-#         result
         if(length(error_mess)==1) message=-1 else message <- result$convergence
 
         if(Silent==F) cat(paste("M=",M,", message=", message,".",sep=""))

@@ -3,7 +3,7 @@
 # the Cox model that shares some parameters with 
 # the mixed effect models.
 
-cox_loglike <- function(survObject, weibPar){
+cox_loglike <- function(survObject, weibPar=NULL){
    model <- survObject$fm
    status <- survObject$event
    resp <- fmReverse(model)$resp  # response variable (event time)
