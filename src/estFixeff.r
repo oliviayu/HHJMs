@@ -1,6 +1,7 @@
 
 # This function estimates the fixed parameters in the 
 # joint models, by maximizing the profile h-likelihood function.
+### Gradient OK.  (Jan 24, 2017)
 
 estFixeff <- function(RespLog=list(Jlik1, Jlik2), 
                           fixed,     # pars to be estimated    
@@ -10,6 +11,7 @@ estFixeff <- function(RespLog=list(Jlik1, Jlik2),
                           B, Bi,     # random effect values
                           invSIGMA, sigma,    # dispersion pars
                           ParVal=NULL, # other par values, given
+                          lower=NULL,
                           Silent=T){ 
   
   # derive -H matrix, where H is defined in the adjusted profile h-likelihood
@@ -41,7 +43,7 @@ estFixeff <- function(RespLog=list(Jlik1, Jlik2),
     lhlike3 <-   - diag(0.5*as.matrix(Bi)%*%invSIGMA%*%t(Bi))
     
     # evaluate profile h-likelihood
-    fy <- sum(lhlike1)+sum(lhlike2)+sum(lhlike3)-0.5*log(det(H/2/pi))
+    fy <- sum(lhlike1)+sum(lhlike2)+sum(lhlike3) -0.5*log(det(H/2/pi)) 
     
     return(-fy)
   }
@@ -56,13 +58,19 @@ estFixeff <- function(RespLog=list(Jlik1, Jlik2),
     # assign values to parameters
     par.val <- Vassign(fixed, xx)    
     par.val <- data.frame(c(par.val, ParVal, sigma))
+#     if(grepl("leftint", RespLog[[1]])){
+#       long.data$leftint <- with(par.val, with(B, 
+#                                               with(long.data, pnorm(delim_val, mean=eval(parse(text=Cmu)),
+#                                                                     sd=eval(parse(text=Csigma))))))
+#     }
+    
     
     # evaluate inverse H matrix
     nD1 <- evalMat(Hmats[[1]], q, long.data, par.val, raneff.val=B)   # longitudinal part
     nD2 <- evalMat(Hmats[[2]], q, surv.data, par.val, raneff.val=Bi)  # survival part
     nD3 <- -invSIGMA*n
     H <-  as.matrix(-(nD1+nD2+nD3))
-    invH <- ginv(H)  
+    invH <- solve(H)  
     
     # calculate and evaluate dH/dbeta, where beta are fixed par
     for(i in 1:p){
@@ -103,36 +111,29 @@ estFixeff <- function(RespLog=list(Jlik1, Jlik2),
   if(Silent==F) check=0  else check=1
   
   # start iteration
-  while(message < 0 & M<20){
+  while(message != 0 & M<10){
+    str_val0 <- sapply(str_val0, function(x)x+rnorm(1,0, min(1, abs(x/5))))
     
-    if(M<10){
-      result <- try(lbfgs::lbfgs(call_eval=ff, call_grad=gr,
-                                 vars=str_val0, epsilon=1e-4, 
-                                 delta=1e-4,
-                                 max_iterations=1500,
-                                 invisible = check), 
-                    silent=T)
-    } else {
-      result <- try(BB::BBoptim(str_val0, fn=ff, gr=NULL, 
-                                control=list(checkGrad=F,
-                                             ftol=1e-10,
-                                             gtol=1e-2,
-                                             trace=T)),
-                    silent=T)
-    }
+    result <- try(optim(par=str_val0, fn=ff, gr=gr,
+                        method="L-BFGS-B",
+                        lower=lower,
+                        control = list(
+                          trace=1-check,
+                          maxit=1000
+                        )),
+                  silent=T)
+    
     
     error_mess <- attr(result, "class")
     
     if(length(error_mess)!=0 ){ 
       message = -1
     } else {
-      if(M<10) message <- result$convergence 
-      if(M>=10) message <- -abs(result$convergence)
+      message <- result$convergence 
       str_val0 <- result$par
     }
     
-    str_val0 <- sapply(str_val0, function(x)x+rnorm(1,0, min(1, abs(x/5))))
-    if(Silent==F) print(message); print(M); print(result)   
+    if(Silent==F){ print(message); print(M); print(result)   }
     M <- M +1
   }
   
@@ -141,8 +142,22 @@ estFixeff <- function(RespLog=list(Jlik1, Jlik2),
     gamma <- result$par
     names(gamma) <- names(str_val)
     fval <- result$value
+    
+#     cat("my gr:", gr(gamma), '\n')
+#     eps=10^{-10}
+#     numGr <- c()
+#     for(i in 1:length(gamma)){
+#       dist <- rep(0, length(gamma))
+#       dist[i] <- eps
+#       numGr <- c(numGr, (ff(gamma+dist)-ff(gamma))/eps)    
+#     }
+#     cat("numerical gr:", numGr, '\n')
+    
+#     plot(gr(gamma), ylim=range(c(gr(gamma), numGR)))
+#     points(numGR, color="red")
+    
   } else {
-    stop("Iteration limit reached without convergence -- for fixed parameters.")  
+    stop("Iteration stops because fixed parameters can not be successfully estimated.")  
   }
   
   return(list(gamma=gamma, fval=fval))

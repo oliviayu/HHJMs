@@ -9,7 +9,7 @@ Vderiv <- function(lik1, pars){
     result <- as.list(rep(NA, q))
        
     for(i in 1:q){
-      result[[i]] <- Simplify(D(lik, pars[i])) 
+      result[[i]] <- D(lik, pars[i])
       names(result)[i] <- pars[i]
     }
         

@@ -6,6 +6,7 @@
 getHmat <- function(RespLog, pars){
   
       p <- length(pars)
+      
       negH_long <-  getHessian(RespLog[[1]], pars)
       negH_surv <-  getHessian(RespLog[[2]], pars)
       

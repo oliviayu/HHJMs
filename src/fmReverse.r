@@ -7,15 +7,16 @@
 # formulaReverse(fm)
 
 fmReverse <- function(fm){
-  sp1 <- strsplit(as.character(fm), "~",  fixed=T)
+  sp1 <- strsplit(as.character(as.formula(fm)), "~",  fixed=T)
   response <- sp1[[2]]   # returns response variable
   
   if( "(" %in% strsplit(as.character(sp1[[3]]), "")[[1]] ){  # if model includes random effects 
-    sp2 <- as.character(strsplit(as.character(sp1[[3]]), "(",  fixed=T)[[1]][1])
+    sps <- strsplit(as.character(sp1[[3]]), "(",  fixed=T)[[1]]
+    sp2 <- as.character(sps[1])
     rvX <- strsplit(sp2,"+",fixed=T)[[1]] 
     rvX <- rvX[-length(rvX)]   # returns covariates of fixed parameters
     
-    sp3 <- as.character(strsplit(as.character(sp1[[3]]), "(",  fixed=T)[[1]][2])
+    sp3 <- as.character(strsplit(sps[2], ")",  fixed=T)[[1]])
     # returns covariates of random effects
     rvZ <- strsplit(as.character(strsplit(sp3,"|",fixed=T)[[1]][1]), "+", fixed=T)[[1]]           
     

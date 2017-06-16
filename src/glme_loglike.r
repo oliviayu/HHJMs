@@ -4,7 +4,7 @@
 
 # condition on: fmReverse()
 
-glme_loglike <- function(glmeObject){
+glme_loglike <- function(glmeObject, std=T){
   
   vars <- fmReverse(glmeObject$fm)
   resp <- vars$resp  # response variable
@@ -13,10 +13,25 @@ glme_loglike <- function(glmeObject){
   p <- length(rvX)  # dimension of fixed pars
   q <- length(rvZ) # dimension of random effects
 
-  fixed <- paste(glmeObject$par, 0:(p-1), sep="") # name fixed pars
-  raneff <- paste(glmeObject$ran.par, 1:q, sep="")  # name random effects
-  linear_pred <- paste(c(fixed, raneff), rep("*", p+q), 
-                       c(rvX, rvZ), sep="", collapse="+")
+  if(p>0){
+    fixed <- paste(glmeObject$par, 0:(p-1), sep="") # name fixed pars
+  } else {fixed=NULL}
+
+  if(std==T){
+    raneff <- paste(glmeObject$ran.par)
+    linear_pred <- paste(fixed, rep("*",p), rvX, sep="",
+                         collapse="+")
+  } else {
+  
+    if(q>0){
+      raneff <- paste(glmeObject$ran.par, 1:q, sep="")  # name random effects
+    } else { raneff=NULL}
+    
+    linear_pred <- paste(c(fixed, raneff), rep("*", p+q), 
+                         c(rvX, rvZ), sep="", collapse="+")
+    
+  }
+
   
   if(glmeObject$family=="binomial"){          
     
