@@ -1,5 +1,5 @@
 ### Example 
-To use this package, first download the source code in 'src' to your local computer. Then call the R functions using the following R command. 
+First download the source code in 'src' to your local computer. Then call the R functions using the following R command. 
 
 ```r
 ## source all the R code
@@ -18,7 +18,7 @@ library(lme4)
 library(tictoc) # for timing R scripts
 ```
 
-In this example, we fit joint models using simulated data. The longitudinal data contain three longitudinal responses, $z$, $y$, and $c$, where $z$ is binary, $y$ is continuous and left-truncated due to a lower limit of quantification (LLOQ), and $c$ is a truncation indicator of $y$ such that $c=1$ if $y$ is truncated and $c=0$ otherwise. The survival data contain the observed event time $obs_time$ and the event indicator $event$. Moreover, $sindoes$, $doesW$, $year$, and $year2$ are some time variables used as explanatory variables in the models, and $sid$ indicates the subject ID in both longitudinal and survival data.
+In this example, we fit joint models using simulated data. The longitudinal data contain three longitudinal responses, $z$, $y$, and $c$, where $z$ is binary, $$y$$ is continuous and left-truncated due to a lower limit of quantification (LLOQ), and $c$ is a truncation indicator of $y$ such that $c=1$ if $y$ is truncated and $c=0$ otherwise. The survival data contain the observed event time $obs_time$ and the event indicator $event$. Moreover, $sindoes$, $doesW$, $year$, and $year2$ are some time variables used as explanatory variables in the models, and $sid$ indicates the subject ID in both longitudinal and survival data.
 
 We first fit the models separately using the two-step method. The resulting estimates will be used as starting values for the joint modeling later. 
 ```r
