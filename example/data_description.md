@@ -4,7 +4,6 @@
 The simulated data have 100 subjects in total, among which 69 experience the event of interest during follow-up and 31 don't. 
 The longitudinal and survival data contain the following variables: 
 
-#### Arguments
 |       |        |
 |-------|--------|
 | sid     | subject ID |
@@ -19,11 +18,9 @@ The longitudinal and survival data contain the following variables:
 | month2 |  $t_{ij}^2$ |
 | year | measurement time (in years), denoted as $t_{ij}^*$.  |
 | year2 | $(t_{ij}^*)^2$  |
-
 |  z |  A binary longitudinal response. |
 | y | A continuous longitudinal response, left truncated with a lower limit of quantification of 2.|
 | c | A truncation indicator of $y$. If $c=1$, $y$ is left truncated.|
 | event | An event indicator. If $event_i=1$, the subject $i$ experiences the event of interest. |
 | obs_time | Observed event time (in days). | 
-
 
