@@ -1,5 +1,8 @@
 ### Example 
-First download the source code in 'src' to your local computer. Then call the R functions using the following R command. 
+
+In this example, we fit joint models using simulated data. The longitudinal data contain three longitudinal responses, $z$, $y$, and $c$, where $z$ is binary, $y$ is continuous and left-truncated due to a lower limit of quantification (LLOQ), and $c$ is a truncation indicator of $y$ such that $c=1$ if $y$ is truncated and $c=0$ otherwise. The survival data contain the observed event time $obs_time$ and the event indicator $event$. Moreover, $sindoes$, $doesW$, $year$, and $year2$ are some time variables used as explanatory variables in the models, and $sid$ indicates the subject ID in both longitudinal and survival data. See data_description.md for more details. 
+
+Download the source code in 'src' to local computer. Then call the R functions using the following R command. 
 
 ```r
 ## source all the R code
@@ -18,15 +21,12 @@ library(lme4)
 library(tictoc) # for timing R scripts
 ```
 
-In this example, we fit joint models using simulated data. The longitudinal data contain three longitudinal responses, $z$, $y$, and $c$, where $z$ is binary, $$y$$ is continuous and left-truncated due to a lower limit of quantification (LLOQ), and $c$ is a truncation indicator of $y$ such that $c=1$ if $y$ is truncated and $c=0$ otherwise. The survival data contain the observed event time $obs_time$ and the event indicator $event$. Moreover, $sindoes$, $doesW$, $year$, and $year2$ are some time variables used as explanatory variables in the models, and $sid$ indicates the subject ID in both longitudinal and survival data.
 
 We first fit the models separately using the two-step method. The resulting estimates will be used as starting values for the joint modeling later. 
 ```r
-################################################
-#### Fit joint model using two-step method  ####
-##########  to get starting values  ############
-################################################
-
+############################################################
+#### Fit joint model using two-step method  to get starting values  ####
+############################################################
 # (1) Model 1: a LME model of Y 
 fm1 <- y ~ 1+ year+year2+sindoes+(1|sid)
 md1 <- lmer(fm1, data=long.data)
@@ -50,15 +50,13 @@ md3 <- glmer(fm3, family="binomial", data=mydat)
 
 # (4) Model 4: a survival model
 # using the estimated random intercept from model 1 (i.e. estb11, scaled) and the estimate random slope from model 3 (i.e. estb21, scaled) as covariates.
-
 Sdata <- surv.data
 Sdata$estb11 <- scale(ranef(md1)$sid[,1], center=T, scale=T)
 Sdata$estb21 <- scale(ranef(md3)$sid[,1], center=T, scale=T)
 
-# a Cox PH model
+# case 1: a Cox PH model
 fitCOX1 <- coxph(Surv(obs_time, event) ~ base+ estb11+estb21, data = Sdata)   
-
-# a Weibull model
+# case 2: a Weibull model
 fitCOX2 <- survreg(Surv(obs_time, event) ~ base+ estb11+estb21, data = Sdata, dist='weibull')
 ```
 
@@ -170,10 +168,48 @@ ptm3 <- toc()
 (ptm3$toc-ptm3$tic)/60  
 ```
 
-The function below returns the coefficient table for the joint modeling via h-likelihood method or adaptive GH method.
+The function *JMsummary()* returns the coefficient table for the joint modeling via h-likelihood method or adaptive GH method. For example,
 ```r
-JMsummary(testjm1)  
-JMsummary(testjm1, newSD=new_sd1)
+JMsummary(testjm1, newSD=NULL, digits=3)  
+# The Std.Error were obtained based on the h-likelihood method.
+         Estimate  Std.Error  Zvalue  Pvalue
+# beta0      2.079     0.051  40.462  0.000
+# beta1      0.941     0.040  23.293  0.000
+# beta2     -0.287     0.017 -16.867  0.000
+# beta3      1.488     0.022  67.596  0.000
+# eta0       0.201     0.232   0.868  0.385
+# eta1      -4.285     0.378 -11.326  0.000
+# eta2       1.354     0.180   7.523  0.000
+# eta3      -6.410     0.374 -17.127  0.000
+# alpha0    -1.700     0.099 -17.125  0.000
+# alpha1     0.165     0.013  12.892  0.000
+# alpha2     1.938     0.110  17.621  0.000
+# alpha3    -0.046     0.005  -8.805  0.000
+# lambda0   -0.999     0.120  -8.302  0.000
+# lambda1   -1.264     0.134  -9.407  0.000
+# lambda2    2.147     0.141  15.212  0.000
+
+
+JMsummary(testjm1, newSD=new_sd1, digits=3)
+# The Std.Error=new_sd1 were obtained based on the adaptive GH method.
+#       Estimate Std.Error  Zvalue Pvalue
+# beta0      2.079     0.062  33.644  0.000
+# beta1      0.941     0.051  18.333  0.000
+# beta2     -0.287     0.022 -13.065  0.000
+# beta3      1.488     0.028  53.832  0.000
+# eta0       0.201     0.282   0.714  0.475
+# eta1      -4.285     0.477  -8.974  0.000
+# eta2       1.354     0.227   5.954  0.000
+# eta3      -6.410     0.486 -13.185  0.000
+# alpha0    -1.700     0.127 -13.359  0.000
+# alpha1     0.165     0.016  10.441  0.000
+# alpha2     1.938     0.140  13.834  0.000
+# alpha3    -0.046     0.007  -6.944  0.000
+# lambda0   -0.999     0.176  -5.688  0.000
+# lambda1   -1.264     0.200  -6.308  0.000
+# lambda2    2.147     0.222   9.670  0.000
+
+
 ```
 
 
