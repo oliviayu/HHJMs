@@ -18,7 +18,6 @@ The *glmeObject( )* and *survObject( )* must be in the following format:
 |       |        |
 |-------|--------| 
 |fm     | A two-sided linear formula object with the response on the left of a ~ operator and the terms, separated by + operators, on the right. |
-<!--For GLME models, random-effects terms are distinguished by vertical bars ("|") separating expressions for design matrices from grouping factors. For Cox model, the random effects in GLME models will be automatically incorporated as explanatory variables. So there is no need to include random effects on the right side of the formula.-->
 |family | A GLM family.  |
 | par | A character string, naming the parameters. Such as, "alpha", "beta", ...  |
 | ran.par |  A character string, naming the random effects. Such as, "b1","b2",...  |   
@@ -27,6 +26,8 @@ The *glmeObject( )* and *survObject( )* must be in the following format:
 | lower / upper | lower/upper bounds of the dispersion parameters specified by *disp*.|
 | str_val |  A numeric vector of starting values for the fixed parameters in the model. |
 | CenObject | A list, indicating the logistic GLME model used to model the censoring mechanism. CenObject=NULL means that the response variable is not censored.| 
+
+<!--For GLME models, random-effects terms are distinguished by vertical bars ("|") separating expressions for design matrices from grouping factors. For Cox model, the random effects in GLME models will be automatically incorporated as explanatory variables. So there is no need to include random effects on the right side of the formula.-->
 
 |       |        |
 |-------|--------| 
