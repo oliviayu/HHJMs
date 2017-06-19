@@ -5,50 +5,60 @@ H-likelihood based Hierarchical Joint Models
 
 This package fits shared parameter models for the joint modeling of longitudinal data and survival data, where the longitudinal responses may be of mixed types, such as binary and continuous, and may be left censored by lower limit of quantification. For statistical inference, we consider a computationally efficient approximate likelihood method based on h-likelihood method [3]. There is an extensive literature on h-likelihood method (e.g. [1]-[5]). Essentially, the h-likelihood method uses Laplace approximations to the intractable integral in the likelihood. Moreover, it can produce approximate MLEs for the mean parameters and approximate restricted maximum likelihood estimates (REML) for the variance-covariance (dispersion) parameters. 
 
+We also implement the adaptive Gauss-Hermite method to compare with the h-likelihood method. 
+
 ### Usage
 ```r
-HHJMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, 
-          itertol = 0.01, iterMax = 10, nblock = 20, Silent = T )
+# fit joint model
+JMobject <- JMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, eventTime, survFit, method, 
+          itertol=0.001, Ptol=0.01, epsilon=1e-6, iterMax=10, ghsize=4, Silent = T )
+
+# estimate SEs of parameter estimates based on the adaptive GH method
+newSD <- JMsd_aGH( JMobject, ghsize=4, srcpath=NULL, paralle=F )
+
+# print coefficient table 
+JMsummary( JMobject, newSD, digits=3 )
+
 ```
-<!--
-where glmeObject and survObject must be in the following format:
-```r
-  glmeObject <- list(fm, family, par, ran.par, disp, str_val,  CenObject)
-  CenObject <- list(fm, family='binomial', par, ran.par, str_val, Cvalue, Cregime, truncated)
-```
--->
+
 
 ##### Arguments
 |           |          |
 |-----------|-----------|
 |glmeObject | A list, indicating the GLME models to be fitted. [Details](../master/others.md) | 
-|survObject | A list, indicating the Cox model to be fitted.  [Details](../master/others.md) |
+|survObject | A list, indicating the survival model (either Cox PH or Weibull model) to be fitted.  [Details](../master/others.md) |
 |long.data  | longitudinal data containing the variables named in formulas in glmeObject |
 |surv.data  | survival data containing the variables named in formulas in survObject |
 |idVar      | subject id |
-|SIGMA      | A matrix, indicating the initial guess for the covariance matrix of the random effects. It defaults to "NULL", which means SIGMA=*I*.|
-|itertol    | Convergence tolerance on the relative absolute change in log-likelihood function between successive iterations. Convergence is declared when the change is less than itertol. Default is itertol = 0.01. |
+|eventTime |    observed event time    |
+| survFit | an objects returned by the *coxph* or *survreg* function to represent a fitted survival model from the two-step method. |
+| method | a vector indicating which method to apply. If method='h-likelihood', the h-likelihood method is used; if method='aGH', the adaptive Gauss-Hermite method is used.   |
+|itertol    | Convergence tolerance on the relative absolute change in log-likelihood function between successive iterations. Convergence is declared when the change is less than itertol. Default is itertol = 0.001. |
+|Ptol    | Convergence tolerance on the average relative absolute change in parameter estimates between successive iterations. Convergence is declared when the change is less than Ptol. Default is Ptol = 0.01. |
+| epsilon |   A small numerical value, used to calculate the numerical value of the derivative of score function. The default value is 1e-6.|
 |iterMax    | The maximum number of iterations. The default value is 10. |
-|nblock     | The number of intervals in the step function which is used to obtain non-parametric estimates of the baseline hazard function. The default value is 20. |
-|Silent     | logical: indicating if messages about convergence success or failure should be suppressed|
+|ghsize | The number of quadrature points used in the adaptive GH method. The default value is 4. |
+|Silent     | logical: indicating if messages about convergence success or failure should be suppressed. |
+
+|           |          |
+|-----------|-----------|
+| srcpath |  a character vector of full path names, indicating the location of the R code. Needed if **parallel**=T. |
+| parallel | logical: indicating if compute the standard errors of parameter estimates in parallel. | 
 
 ##### Outputs
 |           |          |
 |-----------|-----------|
 |fixedest  |  a named vector of estimated coefficients|
-|fixedsd  | standard errors of estimated coefficients|
+|fixedsd  | standard errors of estimated coefficients calculated based on the h-likelihood method |
 |Bi |  estimated random effects, corresponding to each subject|
 |B | estimated random effects, corresponding to each measurement|
 |covBi |  estimated covariance matrix of the random effects|
-|sigma |  the square root of the estimated variances of the random errors in LME models|
-|convergence| An integer code indicating type of convergence. 0 indicates successful convergence, 1 indicates that the maximum limit for iterations 'iterMax' has been reached. |
+|sigma |  estimates of dispersion parameters |
+|convergence| An integer code indicating type of convergence: 0 indicates successful convergence, 1 indicates that the maximum limit for iterations 'iterMax' has been reached without convergence. |
 |loglike_value|  value of approximate log likelihood function  |
-|hloglike_value| value of h-likelihood function   |
+| ... | ... |
 
-The function below returns a coefficient table for the joint models.
-```r
-HHJMsummary( object, digits )
-```
+
 
 <!--
 ```r
@@ -63,6 +73,7 @@ HHJMsummary( object, digits)
 ##### Output
 -->
 
+<!--
 ### Example 
 To use this package, first download the source code in 'src' to your local computer. Then call the R functions using the following R command. 
 
@@ -180,7 +191,7 @@ Asso2     -2.272     0.259  -8.762      0
 Asso3     -4.402     0.361 -12.195      0
 
 ```
-
+-->
 
 
 
