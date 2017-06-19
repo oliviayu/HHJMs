@@ -7,23 +7,26 @@ This package fits shared parameter models for the joint modeling of longitudinal
 
 We also implement the adaptive Gauss-Hermite method to compare with the h-likelihood method. 
 
+A detailed example is given in the **example** folder.
+
 ### Usage
 ```r
 # fit joint model
-JMobject <- JMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, eventTime, survFit, method, 
+JMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, eventTime, survFit, method, 
           itertol=0.001, Ptol=0.01, epsilon=1e-6, iterMax=10, ghsize=4, Silent = T )
 
-# estimate SEs of parameter estimates based on the adaptive GH method
-newSD <- JMsd_aGH( JMobject, ghsize=4, srcpath=NULL, paralle=F )
+# estimate SEs of h-likelihood based parameter estimates, by using the adaptive GH method
+# needed on when method='h-likelihood' in JMfit()
+JMsd_aGH( JMobject, ghsize=4, srcpath=NULL, paralle=F )
 
 # print coefficient table 
-JMsummary( JMobject, newSD, digits=3 )
+JMsummary( JMobject, newSD=NULL, digits=3 )
 
 ```
 
 
 ##### Arguments
-|           |          |
+
 |-----------|-----------|
 |glmeObject | A list, indicating the GLME models to be fitted. [Details](../master/others.md) | 
 |survObject | A list, indicating the survival model (either Cox PH or Weibull model) to be fitted.  [Details](../master/others.md) |
@@ -31,8 +34,8 @@ JMsummary( JMobject, newSD, digits=3 )
 |surv.data  | survival data containing the variables named in formulas in survObject |
 |idVar      | subject id |
 |eventTime |    observed event time    |
-| survFit | an objects returned by the *coxph* or *survreg* function to represent a fitted survival model from the two-step method. |
-| method | a vector indicating which method to apply. If method='h-likelihood', the h-likelihood method is used; if method='aGH', the adaptive Gauss-Hermite method is used.   |
+| survFit | an object returned by the *coxph()* or *survreg()* function to represent a fitted survival model from the two-step method. |
+| method | a vector indicating which method to apply. If *method*='h-likelihood' (by default), the h-likelihood method is used; if *method*='aGH', the adaptive Gauss-Hermite method is used.   |
 |itertol    | Convergence tolerance on the relative absolute change in log-likelihood function between successive iterations. Convergence is declared when the change is less than itertol. Default is itertol = 0.001. |
 |Ptol    | Convergence tolerance on the average relative absolute change in parameter estimates between successive iterations. Convergence is declared when the change is less than Ptol. Default is Ptol = 0.01. |
 | epsilon |   A small numerical value, used to calculate the numerical value of the derivative of score function. The default value is 1e-6.|
@@ -40,16 +43,21 @@ JMsummary( JMobject, newSD, digits=3 )
 |ghsize | The number of quadrature points used in the adaptive GH method. The default value is 4. |
 |Silent     | logical: indicating if messages about convergence success or failure should be suppressed. |
 
-|           |          |
+
 |-----------|-----------|
-| srcpath |  a character vector of full path names, indicating the location of the R code. Needed if **parallel**=T. |
-| parallel | logical: indicating if compute the standard errors of parameter estimates in parallel. | 
+| JMobject | output of *JMfit()*|
+| srcpath |  a character vector of full path names indicating the location of the R code; needed if *parallel*=T;  *srcpath*=NULL by default. |
+| parallel | logical: indicating if compute the standard errors of parameter estimates in parallel. By default, *paralle=F*. | 
+
+|-----------|-----------|
+| newSD  | If *newSD*=NULL (by default), the p-values of the parameter estimates are calculated based on the SEs in the output of *JMfit()* i.e. *fixedsd*. Otherwise, the p-values are calculated based on the new SEs given by *newSD*, e.g. the output of *JMsd_aGH()*.  | 
+
 
 ##### Outputs
 |           |          |
 |-----------|-----------|
 |fixedest  |  a named vector of estimated coefficients|
-|fixedsd  | standard errors of estimated coefficients calculated based on the h-likelihood method |
+|fixedsd  | standard errors of estimated coefficients, calculated based on the given *method*. |
 |Bi |  estimated random effects, corresponding to each subject|
 |B | estimated random effects, corresponding to each measurement|
 |covBi |  estimated covariance matrix of the random effects|
