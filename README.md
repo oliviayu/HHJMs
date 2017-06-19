@@ -27,6 +27,7 @@ JMsummary( JMobject, newSD=NULL, digits=3 )
 
 ##### Arguments
 
+|           |          |
 |-----------|-----------|
 |glmeObject | A list, indicating the GLME models to be fitted. [Details](../master/others.md) | 
 |survObject | A list, indicating the survival model (either Cox PH or Weibull model) to be fitted.  [Details](../master/others.md) |
@@ -43,12 +44,13 @@ JMsummary( JMobject, newSD=NULL, digits=3 )
 |ghsize | The number of quadrature points used in the adaptive GH method. The default value is 4. |
 |Silent     | logical: indicating if messages about convergence success or failure should be suppressed. |
 
-
+|           |          |
 |-----------|-----------|
 | JMobject | output of *JMfit()*|
 | srcpath |  a character vector of full path names indicating the location of the R code; needed if *parallel*=T;  *srcpath*=NULL by default. |
 | parallel | logical: indicating if compute the standard errors of parameter estimates in parallel. By default, *paralle=F*. | 
 
+|           |          |
 |-----------|-----------|
 | newSD  | If *newSD*=NULL (by default), the p-values of the parameter estimates are calculated based on the SEs in the output of *JMfit()* i.e. *fixedsd*. Otherwise, the p-values are calculated based on the new SEs given by *newSD*, e.g. the output of *JMsd_aGH()*.  | 
 
