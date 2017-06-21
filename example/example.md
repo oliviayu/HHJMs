@@ -163,7 +163,7 @@ testjm3 <- try(JMfit(glmeObject, survObject2,
                      long.data, surv.data,
                      idVar="sid", eventTime="obs_time",
                      survFit=fitCOX2,
-                     method = "aGH", ghsize=3, srcpath, parallel=T), silent=T)
+                     method = "aGH", ghsize=3, srcpath = srcpath, parallel=T), silent=T)
 ptm3 <- toc()
 (ptm3$toc-ptm3$tic)/60  # 23.6 min
 ```
