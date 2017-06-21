@@ -165,11 +165,13 @@ testjm3 <- try(JMfit(glmeObject, survObject2,
                      survFit=fitCOX2,
                      method = "aGH", ghsize=3, srcpath, parallel=T), silent=T)
 ptm3 <- toc()
-(ptm3$toc-ptm3$tic)/60  
+(ptm3$toc-ptm3$tic)/60  # 23.6 min
 ```
 
 The function *JMsummary()* returns the coefficient table for the joint modeling via h-likelihood method or adaptive GH method. For example,
 ```r
+## The true parameter values are beta=(2, 1, -0.3, 1.5), alpha = (-1.65, 0.15, 1.8, -0.05), lambda = (-0.75, -1.5, 2)
+
 JMsummary(testjm1, newSD=NULL, digits=3)  
 # The Std.Error were obtained based on the h-likelihood method.
          Estimate  Std.Error  Zvalue  Pvalue
@@ -210,6 +212,52 @@ JMsummary(testjm1, newSD=new_sd1, digits=3)
 # lambda2    2.147     0.222   9.670  0.000
 
 
+JMsummary(testjm2, newSD=NULL, digits=3) 
+#          Estimate Std.Error  Zvalue Pvalue
+# beta0        2.080     0.052  40.375  0.000
+# beta1        0.941     0.040  23.284  0.000
+# beta2       -0.287     0.017 -16.851  0.000
+# beta3        1.487     0.022  67.558  0.000
+# eta0         0.210     0.234   0.897  0.369
+# eta1        -4.310     0.379 -11.359  0.000
+# eta2         1.361     0.181   7.538  0.000
+# eta3        -6.471     0.378 -17.119  0.000
+# alpha0      -1.686     0.101 -16.752  0.000
+# alpha1       0.160     0.016   9.740  0.000
+# alpha2       1.929     0.110  17.577  0.000
+# alpha3      -0.046     0.005  -8.698  0.000
+# lambda0     -0.913     0.142  -6.429  0.000
+# lambda1     -1.106     0.156  -7.080  0.000
+# lambda2      1.877     0.211   8.891  0.000
+# Wlogscale  -96.114     8.650 -11.111  0.000
+# Wshape      14.445     1.297  11.135  0.000
+
+
+JMsummary(testjm3, newSD=NULL, digits=3)
+
+#           Estimate Std.Error  Zvalue Pvalue
+# beta0        2.072     0.051  40.788  0.000
+# beta1        0.939     0.046  20.452  0.000
+# beta2       -0.286     0.020 -14.567  0.000
+# beta3        1.488     0.025  59.561  0.000
+# eta0         0.243     0.232   1.045  0.296
+# eta1        -4.255     0.438  -9.713  0.000
+# eta2         1.349     0.203   6.639  0.000
+# eta3        -6.344     0.452 -14.043  0.000
+# alpha0      -1.701     0.112 -15.233  0.000
+# alpha1       0.157     0.013  12.283  0.000
+# alpha2       1.938     0.125  15.487  0.000
+# alpha3      -0.046     0.006  -7.787  0.000
+# lambda0     -1.004     0.189  -5.316  0.000
+# lambda1     -1.247     0.250  -4.998  0.000
+# lambda2      1.961     0.369   5.314  0.000
+# Wlogscale -100.829    11.586  -8.703  0.000
+# Wshape      15.130     1.738   8.707  0.000
+# sigma        0.491     0.006  83.918  0.000
+# beta4        0.445     0.035  12.706  0.000
+# eta4        -1.710     0.179  -9.540  0.000
+# alpha4       0.361     0.087   4.147  0.000
+# alpha5       0.170     0.017  10.108  0.000 
 ```
 
 

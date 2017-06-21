@@ -15,8 +15,8 @@ A detailed example is given in the **example** folder.
 JMfit ( glmeObject = list( ), survObject = list( ), long.data, surv.data, idVar, eventTime, survFit, method, 
           itertol=0.001, Ptol=0.01, epsilon=1e-6, iterMax=10, ghsize=4, Silent = T )
 
-# estimate SEs of h-likelihood based parameter estimates, by using the adaptive GH method
-# needed on when method='h-likelihood' in JMfit()
+# estimate SEs of h-likelihood based parameter estimates by using the adaptive GH method;
+# can be used if method='h-likelihood' in JMfit()
 JMsd_aGH( JMobject, ghsize=4, srcpath=NULL, paralle=F )
 
 # print coefficient table 

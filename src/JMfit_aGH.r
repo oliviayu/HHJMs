@@ -10,10 +10,9 @@ JMfit_aGH <- function(
   survObject,
   long.data, surv.data,  
   idVar, eventTime, survFit,
-
   # arguments by defualt
   itertol=1e-3, Ptol=1e-2, epsilon=10^{-6},
-  iterMax=10,  ghsize=4, 
+  iterMax=10,  ghsize=3, srcpath=NULL, parallel=F,
   Silent=T
 ){
 
@@ -28,21 +27,12 @@ JMfit_aGH <- function(
   GlmeParValue <- as.list(unlist(Jllike$str_val))   # starting values for longitudinal models
   
   ########################## settings for Survival modeles
-  if(class(survFit)=="coxph"){
-    nblock=max(surv.data[, Sllike$resp])
-    Haz = basehaz(survFit)
-    names(Haz) <- c("Th0", eventTime)
-    Haz$h0 <- c(1e-20, pmax(1e-20, diff(basehaz(survFit)[,1],1)))
-    Nsurv <- merge(surv.data, Haz, by.all=eventTime)
-    Nsurv <- Nsurv[order(Nsurv[,idVar]) ,]
-    surv.data=Nsurv
-    weibPar = NULL
-  } else if(class(survFit)=="survreg" & survFit$dist=="weibull"){
+ if(class(survFit)=="survreg" & survFit$dist=="weibull"){
     weibPar = c( -summary(survFit)$coeff[1]/summary(survFit)$scale,
                  1/summary(survFit)$scale)
-  } 
+    Sllike <-  cox_loglike(survObject, weibPar)
+ } 
   
-  Sllike <-  cox_loglike(survObject, weibPar)
   Jlik2 <- Sllike$loglike  # log-likelihood function
   Spar <- Sllike$par   # fixed parameters in cox model
   Sp <- length(Spar)  # dimension of fixed parameters in Cox model
@@ -76,12 +66,8 @@ JMfit_aGH <- function(
   upper=c(Inf, c(unlist(Jllike$upper), survObject$upper))
   names(lower) <- names(upper) <- Jdisp
   RespLog=list(Jlik1, Jlik2)
-  if(survObject$distribution=="weibull"){
-    fixedlower=c(rep(-Inf, p-1), 0)
-  } else {
-    fixedlower=rep(-Inf, p)
-  } 
-  
+
+  # Alower = c(rep(-Inf, p-1),0, lower) 
   Alower = c(rep(-Inf, p), lower) 
   Aupper = c(rep(Inf,p), upper)
 
@@ -98,15 +84,15 @@ JMfit_aGH <- function(
   
   GHzsamp = mgauss.hermite(n=ghsize, mu=rep(0,q), sigma=diag(1/2, q))
   
-  while(likDiff > itertol & Diff>Ptol & m<iterMax){
-
+  while(likDiff > itertol & Diff > Ptol & m < iterMax){
+    
     # estimate bi's
     output <- get_raneff(RespLog, long.data,surv.data, idVar, uniqueID,
                          Jraneff, invSIGMA0, sigma0, n, ni, q, N,
                          fixedest0, Silent)
     Bi <- output$Bi
     B <- output$B
-    # print("estimate random effects --- done.")
+    print("estimate random effects --- done.")
     
     # get cov(bi) for each subject i
     idsigma = cholHi_adaptGH(RespLog=list(Jlik1, Jlik2), 
@@ -140,6 +126,8 @@ JMfit_aGH <- function(
     
     fixedest = est_result$gamma[1:length(fixedest0)]
     new_invSIGMA = est_result$invSIGMA
+    print("estimate parameters --- done.")
+    
     ####################################################    
     ################## update results ##################
     ####################################################
@@ -202,8 +190,8 @@ JMfit_aGH <- function(
                           GHsample,
                           Dpars=Jraneff, ghsize,
                           uniqueID, idVar, 
-                          invSIGMA=invSIGMA0, epsilon,
-                          otherval=NULL), silent = T)
+                          invSIGMA=invSIGMA0, epsilon=epsilon,
+                          otherval=NULL, srcpath, parallel), silent = T)
   
   return(list(fixedest=fixedest0, 
               fixedsd=sd,

@@ -84,7 +84,8 @@ JMfit_HL <- function(
   RespLog=list(Jlik1, Jlik2)
   
   if(class(survFit)=="coxph"){
-    fixedlower=rep(-Inf, p)
+    fixedlower=NULL
+  # fixedlower = -Inf
   }  else if(class(survFit)=="survreg" & survFit$dist=="weibull"){
     fixedlower=c(rep(-Inf, p-1), 0)
   }
@@ -104,7 +105,7 @@ JMfit_HL <- function(
                          fixedest0, Silent)
     Bi <- output$Bi
     B <- output$B
-   # print("estimate random effects --- done.")
+   print("estimate random effects --- done.")
     
     # estimate fixed parameters in longitudinal and survival model
     estResult <-  estFixeff(RespLog, 
@@ -118,7 +119,7 @@ JMfit_HL <- function(
                             lower=fixedlower,
                             Silent)
     fixedest <- estResult$gamma
-   # print("estimate fixed parameters --- done.")
+    print("estimate fixed parameters --- done.")
       
     # estimate dispersion parameters
       dispest <- estDisp(RespLog, 
@@ -135,7 +136,7 @@ JMfit_HL <- function(
     new_sigma <- dispest$sigma
     new_invSIGMA <- dispest$invSIGMA
     Lval0 = dispest$Lval
-   # print("estimate dispersion parameters --- done.")
+   print("estimate dispersion parameters --- done.")
     
 
     # estimate baseline hazard function in Cox model

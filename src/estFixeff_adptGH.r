@@ -33,7 +33,7 @@ estFixeff_adptGH <- function(RespLog=list(Jlik1, Jlik2),
     
     # assign values to parameters
     par.val <- Vassign(fixed, xx[1:p])    
-    par.val <- data.frame(c(par.val, ParVal, sigma))
+    par.val <- data.frame(c(par.val, ParVal))
     
     # invmat=SIGMA;
     Lval <- Vassign(L2$Mpar, xx[-(1:p)]) 
@@ -78,7 +78,7 @@ estFixeff_adptGH <- function(RespLog=list(Jlik1, Jlik2),
     
     # assign values to parameters
     par.val <- Vassign(fixed, xx[1:p])    
-    par.val <- data.frame(c(par.val, ParVal, sigma))
+    par.val <- data.frame(c(par.val, ParVal))
     
     # invmat=SIGMA;
     Lval <- Vassign(L2$Mpar, xx[-(1:p)]) 
@@ -136,23 +136,20 @@ estFixeff_adptGH <- function(RespLog=list(Jlik1, Jlik2),
   
   
   ## start iteration
-
-  # str_val0 = c(str_val, runif( q0, 0, pi))
-  # str_val0 = c(str_val, rep( 0.5, q0))
   str_val0 = str_val
   Alower = c(lower, rep(0,q0)) 
-  Aupper = c(upper, rep(pi,q0))
+  Aupper = c(upper, rep(pi, q0))
+  # print(ff(c(str_val0, runif( q0, 0, pi))))
+  # print(gr(c(str_val0, runif( q0, 0, pi))))
   
   message <- -1
   M <- 1
-  #     ff(str_val0)
-  #     gr(str_val0)
-  
+
   if(Silent==F) check=0  else check=1
   
   # start iteration
   while(message != 0 & M<50){
-
+    
     result <- try(optim(par=c(str_val0, runif( q0, 0, pi)), fn=ff, gr=gr,
                         method="L-BFGS-B",
                         lower=Alower,
@@ -167,12 +164,10 @@ estFixeff_adptGH <- function(RespLog=list(Jlik1, Jlik2),
     
     if(length(error_mess)!=0 ){ 
       message = -1
-      str_val0 <- sapply(str_val, function(x)x+rnorm(1,0, min(1, abs(x/5))))
     } else {
       message <- result$convergence 
-      str_val0 <- result$par
-     
     }
+    str_val0 <- sapply(str_val, function(x)x+rnorm(1,0, min(1, abs(x/2))))
     
     if(Silent==F){ print(message); print(M); print(result)   }
     M <- M +1
@@ -183,7 +178,6 @@ estFixeff_adptGH <- function(RespLog=list(Jlik1, Jlik2),
     gamma <- result$par[1:p]
     names(gamma) <- fixed
     fval <- result$value
-    #Hmat = result$hessian
     
     Lval <- Vassign(L2$Mpar, result$par[-(1:p)])
     invmat <- evalMat(as.list(L2$M), q, par.val=Lval)

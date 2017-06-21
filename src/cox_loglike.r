@@ -24,21 +24,23 @@ cox_loglike <- function(survObject, weibPar=NULL){
     str_val <- survObject$str_val
     names(str_val) <- par
   } else if(survObject$distribution=="weibull"){
-#     loglike <- paste(status,"*( log(Wscale*Wshape*",resp,"^(Wshape-1)) +", linear_pred, ") - 
-#                    exp(", linear_pred, ")*Wscale*",resp,"^Wshape", sep="")
-    
+
     # log-likelihood for weibull ph model
     loglike <- paste(status,"*( Wlogscale+log(Wshape)+log(",resp,")*(Wshape-1) +", linear_pred, ") - 
                    exp(Wlogscale+", linear_pred, ")*",resp,"^Wshape", sep="")
-#     
+#     loglike <- paste(status,"*( Wlogscale+Wlogshape+log(",resp,")*(exp(Wlogshape)-1) +", linear_pred, ") - 
+#                    exp(Wlogscale+", linear_pred, ")*",resp,"^exp(Wlogshape)", sep="")
+
+    
     # log-likelihood for weibull AFT model
 #     loglike <- paste(status,"*( Wlogscale+log(Wshape)+log(",resp,")*(Wshape-1) -(", linear_pred, 
 #                      ")*Wshape) - exp(Wlogscale-(", linear_pred, ")*Wshape)*",
 #                      resp,"^Wshape", sep="")
     
-    if(is.null(weibPar)) weibPar=c(0,1)
+    if(is.null(weibPar)){ weibPar=c(0,1) }
     str_val <- c(survObject$str_val, weibPar)
     par=c(par,"Wlogscale", "Wshape")
+    # par=c(par,"Wlogscale", "Wlogshape")
     names(str_val) <- par
   }
   

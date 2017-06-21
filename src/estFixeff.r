@@ -110,18 +110,25 @@ estFixeff <- function(RespLog=list(Jlik1, Jlik2),
 
   if(Silent==F) check=0  else check=1
   
+  if(is.null(lower)){
+    lower= -Inf; method="BFGS"
+  } else {
+    method="L-BFGS-B"
+  }
+  
   # start iteration
   while(message != 0 & M<10){
     str_val0 <- sapply(str_val0, function(x)x+rnorm(1,0, min(1, abs(x/5))))
     
+  
     result <- try(optim(par=str_val0, fn=ff, gr=gr,
-                        method="L-BFGS-B",
-                        lower=lower,
-                        control = list(
-                          trace=1-check,
-                          maxit=1000
-                        )),
-                  silent=T)
+                          method=method,
+                          lower=lower,
+                          control = list(
+                            trace=1-check,
+                            maxit=1000
+                          )),
+                    silent=T)
     
     
     error_mess <- attr(result, "class")

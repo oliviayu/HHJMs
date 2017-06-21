@@ -7,7 +7,7 @@ get_aGH_sd2 <- function(long.data, surv.data,
                        RespLog, p, q, GHzsamp,GHsample,
                        Dpars=Jraneff,ghsize,
                        uniqueID, idVar, invSIGMA,
-                       epsilon=10^{-6}, otherval=NULL, srcpath=NULL){
+                       epsilon=10^{-6}, otherval=NULL, srcpath=NULL, parallel=F){
   
   #############
   fixed = names(fixedest0)
@@ -65,28 +65,29 @@ get_aGH_sd2 <- function(long.data, surv.data,
   
   ## esimate Hessian matrix by numerical derivative 
   est = unlist(c(fixedest0))
-
-  # no_cores <- detectCores() - 1
-  # cl<-makeCluster(no_cores)
-  # registerDoParallel(cl)
-  # 
-  # Hmat = foreach(exponent = 1:(p), 
-  #                .combine = rbind
-  # )  %dopar%  
-  # {
-  #   # setwd("~/Dropbox/TwoRegimes/src")
-  #   setwd(srcpath)
-  #   file.sources = list.files(pattern="*.r$")
-  #   sapply(file.sources,source,.GlobalEnv)
-  #   
-  #   Delta = rep(0, p)
-  #   Delta[exponent] = epsilon
-  #   gr1= gr(est+Delta)
-  #   gr2= gr(est-Delta)
-  #   (gr1-gr2)/(epsilon*2)
-  # }
-  # stopCluster(cl)
   
+  if(parallel==T){
+    no_cores <- detectCores() - 1
+    cl <- makeCluster(no_cores)
+    registerDoParallel(cl)
+    
+    Hmat = foreach(exponent = 1:(p), 
+                   .combine = rbind
+    )  %dopar%  
+    {
+      setwd(srcpath)
+      file.sources = list.files(pattern="*.r$")
+      sapply(file.sources,source,.GlobalEnv)
+      
+      Delta = rep(0, p)
+      Delta[exponent] = epsilon
+      gr1= gr(est+Delta)
+      gr2= gr(est-Delta)
+      (gr1-gr2)/(epsilon*2)
+    }
+    
+    stopCluster(cl)
+  } else {
     Hmat = matrix(NA, nrow=p, ncol=p)
     for(i in 1:(p)){
       # i=1
@@ -95,6 +96,7 @@ get_aGH_sd2 <- function(long.data, surv.data,
       Hmat[i,]=(gr(est+Delta)-gr(est))/epsilon
       # cat("i=",i,'\n')
     }
+  }
   
   sd = sqrt(diag(solve(Hmat)))
   

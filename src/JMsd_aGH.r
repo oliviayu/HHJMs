@@ -1,5 +1,6 @@
 
-JMsd_aGH <- function(HHJMfit_obj, ghsize=4, Silent=T, epsilon=10^{-6}){
+JMsd_aGH <- function(HHJMfit_obj, ghsize=4, Silent=T, epsilon=10^{-6}, 
+                     srcpath=NULL, parallel=F){
     q = ncol(HHJMfit_obj$Bi)  
     RespLog=HHJMfit_obj$RespLog
     Jraneff=HHJMfit_obj$Jraneff 
@@ -24,7 +25,7 @@ JMsd_aGH <- function(HHJMfit_obj, ghsize=4, Silent=T, epsilon=10^{-6}){
     for(i in 1:n){
       GHsample0[[i]] = mgauss.hermite(n=ghsize, mu=as.numeric(Bi[i,]), sigma=idsigma[[i]])
     }
-    
+
     GHsd2 = try(get_aGH_sd2(long.data, surv.data,
                             fixedest0=ParVal,
                             RespLog, p=length(ParVal), q, 
@@ -32,6 +33,6 @@ JMsd_aGH <- function(HHJMfit_obj, ghsize=4, Silent=T, epsilon=10^{-6}){
                             Dpars=Jraneff, ghsize,
                             uniqueID, idVar, 
                             invSIGMA=invSIGMA0, epsilon,
-                            otherval=sigma), silent = T)
+                            otherval=sigma,  srcpath, parallel), silent = T)
    return(GHsd2)
 }
