@@ -1,4 +1,5 @@
-
+#' Estimate the standard errors of fixed parameters
+#' 
 get_sd <- function(long.data, surv.data, Bi, B,
                    fixedest0, sigma0, invSIGMA0,
                    RespLog, Jfixed, Jraneff, p, q, n){

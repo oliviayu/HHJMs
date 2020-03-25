@@ -1,20 +1,15 @@
-
-# This function estimates the dispersion parameters in the 
-# joint models, by maximizing the adjusted profile 
-# h-likelihood function.
-
-# condition on: getHmat(), Vassign(), evalMat()
-
-estDisp <- function(RespLog=list(Jlik1, Jlik2), 
+#' Estimate the dispersion parameters in the joint models, by maximizing the 
+#' adjusted profile h-likelihood function.
+estDisp <- function(RespLog = list(Jlik1, Jlik2), 
                     Jdisp,      # pars to be estimated    
                     sigma0,   # starting values 
                     invSIGMA0,  # starting values
-                    Dpars=c(Jraneff,Jfixed,Spar),   
+                    Dpars = c(Jraneff,Jfixed,Spar),   
                     long.data, surv.data, # dataset
                     B, Bi,     # values of random effects, given
                     ParVal, # values of fixed par, given
-                    Silent=T,
-                    Lval0=NULL, lower, upper){ 
+                    Silent = T,
+                    Lval0 = NULL, lower, upper){ 
   
   # derive -H matrix, where H is defined in the adjusted profile h-likelihood
   Hmats <- getHmat(RespLog, pars=Dpars)  
@@ -23,9 +18,6 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
   q2 <- ncol(Bi)
   n <- nrow(Bi)
   L2  <- strMat(q2)   # Return matrices of strings for cov(bi) 
-  
-#   print(L2$M)
-#   print(L2$dM)
   
   # ff() returns the negative value of the adjusted 
   # profile h-likelihood to be optimized.
@@ -76,7 +68,6 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
     dH2[[i]] <- deriv(formula(paste("~",Hmats[[2]][i])), Jdisp)
   }
   
-  
   ############ gradient function
   gr <- function(xx){  # xx are input values of dispersion parameters
     fy <- numeric(k)
@@ -116,7 +107,7 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
       dH2_val <- matrix(myDmat2[,i], q,q)
       traces[i] <-  matrix.trace(invH%*%(-dH1_val-dH2_val)) 
     }
-
+    
     fy0 <- dh_val1+dh_val2 -0.5*traces
     fy1 <- - fy0
     
@@ -132,7 +123,7 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
       gh2 <- -0.5*matrix.trace(as.matrix(invH%*%DH2))
       fy2[i] <- -(gh1+gh2)
     }
-
+    
     fy <- c(fy1, fy2)
     # cat("gr value=", fy,'\n')
     return(fy)
@@ -157,19 +148,19 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
       Lval00 =  Lval0+rnorm(length(Lval0),0,0.01)
     }
     str_val0 <-  unlist(c(sigma0+rnorm(length(sigma0),0,0.1), 
-                         Lval00))
-                          
-
+                          Lval00))
+    
+    
     result <- try(optim(par=str_val0, fn=ff, gr=gr,
-                          method=method,
-                         lower=c(lower, rep(0,q0)), 
-                         upper=c(upper,rep(pi,q0)),
-                          control = list(
-                            trace=1-check,
-                            maxit=1000
-                          )), 
-                    silent=T)
-      
+                        method=method,
+                        lower=c(lower, rep(0,q0)), 
+                        upper=c(upper,rep(pi,q0)),
+                        control = list(
+                          trace=1-check,
+                          maxit=1000
+                        )), 
+                  silent=T)
+    
     error_mess <- attr(result, "class")
     
     if(length(error_mess)!=0 ){ 
@@ -191,21 +182,6 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
       Lval <- Vassign(L2$Mpar, result$par[-(1:q1)])
       invmat <- evalMat(as.list(L2$M), q2, par.val=Lval)
       mat <- solve(invmat)
-      
-      #### check grad
-#       par <- result$par
-#       cat("my gr:", gr(par), '\n')
-#       eps=10^{-10}
-#       ngr <- rep(NA, k)
-#       for(i in 1:k){
-#         DELTA <- rep(0, k)
-#         DELTA[i] <- eps
-#         ngr[i] <- (ff(par+DELTA)-ff(par))/eps
-#       }
-#       cat("numerical gr:",ngr,'\n')
-#       plot(gr(par), ylim=range(c(gr(par), ngr)))
-#       points(ngr, col="red")
-      
     } else{ 
       output=NULL
       Lval <- Vassign(L2$Mpar, result$par)
@@ -220,7 +196,6 @@ estDisp <- function(RespLog=list(Jlik1, Jlik2),
   }
   
   return(list(sigma=output, invSIGMA=mat, Lval=Lval))
-  
-  }
+}
 
 

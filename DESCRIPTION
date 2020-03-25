@@ -1,0 +1,24 @@
+Package: HHJMs
+Type: Package
+Title: H-likelihood-based hierarchical joint models
+Version: 0.1.0
+Author: Tingting Yu
+Maintainer: Tingting Yu <tingting.yu.jun@gmail.com>
+Description: This package fits shared parameter models for the joint modeling of longitudinal data and survival data, 
+  where the longitudinal responses may be of mixed types, such as binary and continuous, and may be left censored by 
+  lower limit of quantification. For statistical inference, we consider a computationally efficient approximate likelihood 
+  method based on h-likelihood method. Essentially, the h-likelihood method uses Laplace approximations to the intractable 
+  integral in the likelihood. Moreover, it can produce approximate MLEs for the mean parameters and approximate restricted 
+  maximum likelihood estimates (REML) for the variance-covariance (dispersion) parameters. 
+    We also implement the adaptive Gauss-Hermite method to compare with the h-likelihood method.
+    A detailed example is given in the example folder.
+License: What license is it under?
+Encoding: UTF-8
+Imports: 
+  Deriv (>= 3.9.0),
+  matrixcalc (>= 1.0-3),
+  lbfgs (>= 1.2.1),
+  parallel (>= 3.5.3)
+LazyData: true
+RoxygenNote: 7.0.2
+

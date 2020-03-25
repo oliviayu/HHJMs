@@ -1,4 +1,5 @@
-
+#' Estimate random effects
+#' 
 get_raneff <- function(RespLog, 
                        long.data,surv.data, idVar, uniqueID,
                        Jraneff, invSIGMA0, sigma0, n, ni,q,N,
